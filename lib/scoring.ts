@@ -157,66 +157,134 @@ function getAttachmentStyle(anxiety: number, avoidance: number): 'secure' | 'anx
   return 'fearful';
 }
 
-// ═══ RISK MATRIX PENALTY ═══
+// ═══ AUDIT PHASE: NEGATIVE TRAIT OVERRIDES ═══
+// Clinical principle: matching on POSITIVE traits = Synergy.
+// Matching on NEGATIVE traits = Amplification (dangerous).
+// Dark traits NEVER contribute positively — they only trigger penalties.
 
-function computeRiskPenalty(a: TraitScores, b: TraitScores): { penalty: number; warnings: string[] } {
+// Threshold: 75 on 0-100 scale = equivalent to >4.0 on 1-5 Likert
+const HIGH_THRESHOLD = 75;
+const MODERATE_THRESHOLD = 60;
+
+function computeRiskPenalty(a: TraitScores, b: TraitScores): { penalty: number; warnings: string[]; autoFail: boolean } {
   let penalty = 0;
   const warnings: string[] = [];
+  let autoFail = false;
 
-  // 1. Anxious-Avoidant trap
-  const styleA = getAttachmentStyle(a.attachment_anxiety, a.attachment_avoidance);
-  const styleB = getAttachmentStyle(b.attachment_anxiety, b.attachment_avoidance);
-  if ((styleA === 'anxious' && styleB === 'avoidant') || (styleA === 'avoidant' && styleB === 'anxious')) {
-    penalty += 20;
-    warnings.push('Anxious-Avoidant attachment trap detected. This pairing often leads to a pursue-withdraw cycle that erodes trust over time.');
+  // ─────────────────────────────────────────────────────────────────
+  // 1. VOLATILITY OVERRIDE (Neuroticism Amplification)
+  //    Two highly neurotic people don't stabilize each other —
+  //    they amplify each other's panic and create an explosive home.
+  // ─────────────────────────────────────────────────────────────────
+  if (a.neuroticism > HIGH_THRESHOLD && b.neuroticism > HIGH_THRESHOLD) {
+    penalty += 15;
+    warnings.push('⚡ Volatility Amplification: You both experience emotions very intensely. During times of stress, you must actively work to de-escalate rather than feeding off each other\'s anxiety. Without deliberate coping strategies, this pairing risks chronic emotional escalation.');
   }
-  if (styleA === 'fearful' || styleB === 'fearful') {
+
+  // Dual high avoidant coping = both shut down under stress, nothing gets resolved
+  if (a.coping_avoidant > HIGH_THRESHOLD && b.coping_avoidant > HIGH_THRESHOLD) {
     penalty += 10;
-    warnings.push('One or both partners show fearful-avoidant attachment, indicating possible unresolved relational trauma.');
+    warnings.push('⚡ Dual Avoidant Coping: Both partners tend to disengage under stress. Critical issues may go unresolved indefinitely, building resentment over time.');
   }
 
-  // 2. High Dark Triad
+  // ─────────────────────────────────────────────────────────────────
+  // 2. PREDATOR-PREY PENALTY (Dark Triad × Vulnerability)
+  //    Dark traits NEVER add to compatibility. They only penalize.
+  //    The most dangerous combo: high Dark Triad + high Agreeableness target.
+  // ─────────────────────────────────────────────────────────────────
   const darkA = (a.machiavellianism + a.narcissism + a.psychopathy) / 3;
   const darkB = (b.machiavellianism + b.narcissism + b.psychopathy) / 3;
-  if (darkA > 65 || darkB > 65) {
-    penalty += 15;
-    warnings.push('Elevated dark personality traits detected. Risk of manipulative or exploitative relational dynamics.');
-  }
-  if (darkA > 65 && darkB > 65) {
-    penalty += 10;
-    warnings.push('Both partners show elevated dark traits. High conflict and power-struggle potential.');
+
+  // Predator-Prey: High dark traits targeting a highly agreeable/empathetic person
+  if (darkA > HIGH_THRESHOLD && b.agreeableness > HIGH_THRESHOLD) {
+    penalty += 40;
+    autoFail = true;
+    warnings.push('🚨 PROTECTIVE BLOCK — Predator-Prey Dynamic: One partner shows elevated manipulative traits while the other is highly empathetic and trusting. This combination has the highest clinical risk for emotional exploitation. Match automatically failed to protect the vulnerable partner.');
+  } else if (darkB > HIGH_THRESHOLD && a.agreeableness > HIGH_THRESHOLD) {
+    penalty += 40;
+    autoFail = true;
+    warnings.push('🚨 PROTECTIVE BLOCK — Predator-Prey Dynamic: One partner shows elevated manipulative traits while the other is highly empathetic and trusting. This combination has the highest clinical risk for emotional exploitation. Match automatically failed to protect the vulnerable partner.');
   }
 
-  // 3. Emotional Intelligence asymmetry
+  // Moderate dark + high agreeableness (not auto-fail but heavy penalty)
+  if (!autoFail) {
+    if ((darkA > MODERATE_THRESHOLD && b.agreeableness > HIGH_THRESHOLD) ||
+        (darkB > MODERATE_THRESHOLD && a.agreeableness > HIGH_THRESHOLD)) {
+      penalty += 25;
+      warnings.push('⚠️ Exploitation Risk: One partner shows moderately elevated dark traits paired with a highly trusting partner. The empathetic partner may be vulnerable to subtle manipulation over time.');
+    }
+  }
+
+  // Both high dark = brutal power struggle
+  if (darkA > HIGH_THRESHOLD && darkB > HIGH_THRESHOLD) {
+    penalty += 25;
+    warnings.push('⚠️ Dual Dark Traits: Both partners show elevated manipulative tendencies. This pairing typically devolves into a destructive power struggle with no stable resolution.');
+  }
+
+  // Single high dark (general flag)
+  if (!autoFail && (darkA > HIGH_THRESHOLD || darkB > HIGH_THRESHOLD)) {
+    penalty += 15;
+    warnings.push('⚠️ Elevated Dark Personality: One partner scores high on manipulative traits (Machiavellianism, Narcissism, or Psychopathy). Proceed with extreme caution.');
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3. POLARIZATION PENALTY (Anxious-Avoidant Trap)
+  //    The most researched toxic attachment pairing.
+  //    They don't just differ — they perfectly trigger each other.
+  // ─────────────────────────────────────────────────────────────────
+  const styleA = getAttachmentStyle(a.attachment_anxiety, a.attachment_avoidance);
+  const styleB = getAttachmentStyle(b.attachment_anxiety, b.attachment_avoidance);
+
+  if ((styleA === 'anxious' && styleB === 'avoidant') || (styleA === 'avoidant' && styleB === 'anxious')) {
+    penalty += 20;
+    warnings.push('⚡ Anxious-Avoidant Trap: Major Friction Point. When arguments happen, one partner will want to resolve it immediately while the other needs to withdraw. This pursue-withdraw cycle is the leading psychological predictor of marital dissatisfaction. You must establish strict rules for how to take "timeouts" during fights.');
+  }
+
+  // Fearful-avoidant (disorganized) — indicates unresolved trauma
+  if (styleA === 'fearful' || styleB === 'fearful') {
+    penalty += 10;
+    warnings.push('⚠️ Disorganized Attachment: One or both partners show fearful-avoidant patterns, indicating possible unresolved relational trauma. Professional counseling strongly recommended before commitment.');
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 4. ADDITIONAL CLINICAL OVERRIDES
+  // ─────────────────────────────────────────────────────────────────
+
+  // EQ Asymmetry — large gap means one partner carries all emotional labor
   const eqA = (a.eq_wellbeing + a.eq_self_control + a.eq_emotionality + a.eq_sociability) / 4;
   const eqB = (b.eq_wellbeing + b.eq_self_control + b.eq_emotionality + b.eq_sociability) / 4;
   if (Math.abs(eqA - eqB) > 35) {
     penalty += 10;
-    warnings.push('Large emotional intelligence gap. The higher-EQ partner may feel emotionally unsupported or drained.');
+    warnings.push('⚠️ Emotional Intelligence Gap: The higher-EQ partner will likely bear disproportionate emotional labor, leading to burnout and resentment over time.');
   }
 
-  // 4. High neuroticism + low agreeableness
-  if ((a.neuroticism > 70 && b.agreeableness < 30) || (b.neuroticism > 70 && a.agreeableness < 30)) {
+  // High neuroticism + low agreeableness in partner = conflict escalation
+  if ((a.neuroticism > HIGH_THRESHOLD && b.agreeableness < 30) || (b.neuroticism > HIGH_THRESHOLD && a.agreeableness < 30)) {
     penalty += 10;
-    warnings.push('High neuroticism paired with low agreeableness increases conflict escalation risk.');
+    warnings.push('⚠️ Conflict Escalation Risk: High emotional reactivity paired with low accommodation. Arguments are likely to escalate rapidly without resolution.');
   }
 
-  // 5. Avoidant coping asymmetry
-  if (Math.abs(a.coping_avoidant - b.coping_avoidant) > 40) {
-    penalty += 5;
-    warnings.push('Significant difference in avoidant coping styles. One partner may shut down while the other seeks resolution.');
-  }
-
-  // 6. Low self-control + high psychopathy
-  if ((a.eq_self_control < 30 && a.psychopathy > 60) || (b.eq_self_control < 30 && b.psychopathy > 60)) {
+  // Low self-control + psychopathy = impulsive harmful behavior
+  if ((a.eq_self_control < 25 && a.psychopathy > MODERATE_THRESHOLD) || (b.eq_self_control < 25 && b.psychopathy > MODERATE_THRESHOLD)) {
     penalty += 15;
-    warnings.push('Low emotional self-control combined with elevated psychopathy traits. Potential for impulsive harmful behavior.');
+    warnings.push('🚨 Impulse-Aggression Risk: Low emotional self-control combined with callous traits. Elevated risk of impulsive harmful behavior during conflict.');
   }
 
-  return { penalty: Math.min(penalty, 55), warnings };
+  // Coping style mismatch (one active, one avoidant)
+  if ((a.coping_active > HIGH_THRESHOLD && b.coping_avoidant > HIGH_THRESHOLD) ||
+      (b.coping_active > HIGH_THRESHOLD && a.coping_avoidant > HIGH_THRESHOLD)) {
+    penalty += 5;
+    warnings.push('⚡ Coping Mismatch: One partner confronts problems head-on while the other withdraws. This asymmetry can create frustration during stressful life events.');
+  }
+
+  // Cap total penalty (auto-fail overrides this)
+  return { penalty: autoFail ? 100 : Math.min(penalty, 65), warnings, autoFail };
 }
 
 // ═══ MAIN MATCHING FUNCTION ═══
+// Two-phase architecture:
+//   PHASE 1 (Reward): Euclidean distance on HEALTHY traits only
+//   PHASE 2 (Audit): Negative trait checks — deductions & auto-fails
 
 export function calculateMatch(
   traitsA: TraitScores,
@@ -224,7 +292,7 @@ export function calculateMatch(
   dealbreakersA: Record<string, string>,
   dealbreakersB: Record<string, string>
 ): MatchResult {
-  // Step 1: Hard gates
+  // Step 1: Hard gates (dealbreakers)
   const dealbreakConflicts = checkDealbreakers(dealbreakersA, dealbreakersB);
   const attachmentCombo = `${getAttachmentStyle(traitsA.attachment_anxiety, traitsA.attachment_avoidance)}-${getAttachmentStyle(traitsB.attachment_anxiety, traitsB.attachment_avoidance)}`;
 
@@ -242,30 +310,30 @@ export function calculateMatch(
     };
   }
 
-  // Step 2: Category proximity scores
-  const personalityKeys: (keyof TraitScores)[] = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
+  // ═══ PHASE 1: REWARD (Healthy Traits Only) ═══
+  // Neuroticism, Dark Triad, and Avoidant Coping are EXCLUDED from reward.
+  // They can never ADD to compatibility — only the Audit Phase handles them.
+  const healthyPersonalityKeys: (keyof TraitScores)[] = ['openness', 'conscientiousness', 'extraversion', 'agreeableness'];
   const eqKeys: (keyof TraitScores)[] = ['eq_wellbeing', 'eq_self_control', 'eq_emotionality', 'eq_sociability'];
-  const copingKeys: (keyof TraitScores)[] = ['coping_active', 'coping_avoidant', 'coping_support'];
+  const healthyCopingKeys: (keyof TraitScores)[] = ['coping_active', 'coping_support'];
   const nfcKeys: (keyof TraitScores)[] = ['need_for_cognition'];
 
-  const personalityScore = euclideanProximity(traitsA, traitsB, personalityKeys);
+  const personalityScore = euclideanProximity(traitsA, traitsB, healthyPersonalityKeys);
   const eqScore = euclideanProximity(traitsA, traitsB, eqKeys);
-  const copingScore = euclideanProximity(traitsA, traitsB, copingKeys);
+  const copingScore = euclideanProximity(traitsA, traitsB, healthyCopingKeys);
   const nfcScore = euclideanProximity(traitsA, traitsB, nfcKeys);
-
-  // Values score from dealbreaker proximity (non-binary items)
-  // Use personality + EQ as proxy for values alignment
   const valuesScore = Math.round((personalityScore * 0.4 + eqScore * 0.6));
 
-  // Weighted composite (total = 100%)
-  // Personality: 25%, EQ: 25%, Values: 20%, NFC: 15%, Coping: 15%
+  // Weighted composite (Personality 25%, EQ 25%, Values 20%, NFC 15%, Coping 15%)
   const rawScore = personalityScore * 0.25 + eqScore * 0.25 + valuesScore * 0.20 + nfcScore * 0.15 + copingScore * 0.15;
 
-  // Step 3: Risk penalty
-  const { penalty, warnings } = computeRiskPenalty(traitsA, traitsB);
-  const overallScore = Math.max(0, Math.round(rawScore - penalty));
+  // ═══ PHASE 2: AUDIT (Negative Trait Checks) ═══
+  const { penalty, warnings, autoFail } = computeRiskPenalty(traitsA, traitsB);
 
-  // Step 4: Dimension-level analysis
+  // Auto-fail: Predator-Prey dynamic detected — score forced to 0
+  const overallScore = autoFail ? 0 : Math.max(0, Math.round(rawScore - penalty));
+
+  // Step 4: Dimension-level analysis (for dashboard display)
   const frictionPoints: string[] = [];
   const synergies: string[] = [];
 
@@ -285,10 +353,13 @@ export function calculateMatch(
     need_for_cognition: 'Intellectual Curiosity',
   };
 
-  const allKeys: (keyof TraitScores)[] = [...personalityKeys, ...eqKeys, ...copingKeys, ...nfcKeys];
+  // Include all dimensions in display (including negative ones for transparency)
+  const allDisplayKeys: (keyof TraitScores)[] = [
+    ...healthyPersonalityKeys, 'neuroticism', ...eqKeys, 'coping_active', 'coping_avoidant', 'coping_support', ...nfcKeys
+  ];
   const dimensionScores: Record<string, { score: number; label: string }> = {};
 
-  for (const k of allKeys) {
+  for (const k of allDisplayKeys) {
     const diff = Math.abs(traitsA[k] - traitsB[k]);
     const proximity = Math.round((1 - diff / 100) * 100);
     const label = dimLabels[k] || k;
@@ -299,8 +370,8 @@ export function calculateMatch(
 
   return {
     overallScore,
-    dealbreakersPass: true,
-    dealbreakConflicts: [],
+    dealbreakersPass: !autoFail,
+    dealbreakConflicts: autoFail ? ['Protective filter triggered'] : [],
     dimensionScores,
     frictionPoints,
     synergies,
