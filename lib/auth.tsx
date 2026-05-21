@@ -35,8 +35,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function fetchUsername(userId: string) {
-    const { data } = await supabase.from('users').select('username').eq('id', userId).single();
+    const { data } = await supabase.from('users').select('username').eq('id', userId).maybeSingle();
     setUsername(data?.username ?? null);
+  }
+
+  // If user is authenticated but has no username row, try to create one
+  async function ensureUserRow(userId: string, fallbackUsername: string) {
+    const { data } = await supabase.from('users').select('username').eq('id', userId).maybeSingle();
+    if (!data) {
+      await supabase.from('users').insert({ id: userId, username: fallbackUsername });
+      setUsername(fallbackUsername);
+    } else {
+      setUsername(data.username);
+    }
   }
 
   async function signUp(email: string, password: string, username: string) {
