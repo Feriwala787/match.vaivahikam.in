@@ -1,44 +1,44 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabaseServer, getUser } from '@/lib/supabase-server';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies['sb-access-token'];
-  const { data: { user } } = await supabase.auth.getUser(token);
-  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  const user = await getUser(req);
+  if (!user) return res.status(401).json({ error: 'Unauthorized. Please log in again.' });
 
+  const supabase = getSupabaseServer();
   const { targetUsername } = req.body;
-  if (!targetUsername) return res.status(400).json({ error: 'Target username required' });
+  if (!targetUsername) return res.status(400).json({ error: 'Target username required.' });
 
   // Get sender username
   const { data: sender } = await supabase.from('users').select('username').eq('id', user.id).single();
-  if (!sender) return res.status(400).json({ error: 'Complete your profile first' });
+  if (!sender) return res.status(400).json({ error: 'Complete your profile first.' });
 
-  // Verify target exists and has completed assessment
+  if (sender.username === targetUsername) return res.status(400).json({ error: "You can't send a request to yourself." });
+
+  // Verify target exists
   const { data: target } = await supabase.from('users').select('id, username').eq('username', targetUsername).single();
-  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (!target) return res.status(404).json({ error: `User @${targetUsername} not found.` });
 
+  // Verify both have completed assessment
   const { data: targetProfile } = await supabase.from('psych_profiles').select('id').eq('user_id', target.id).single();
-  if (!targetProfile) return res.status(400).json({ error: 'Target user has not completed their assessment yet' });
+  if (!targetProfile) return res.status(400).json({ error: `@${targetUsername} has not completed their assessment yet.` });
 
-  // Check sender has completed assessment
   const { data: senderProfile } = await supabase.from('psych_profiles').select('id').eq('user_id', user.id).single();
-  if (!senderProfile) return res.status(400).json({ error: 'Complete your assessment first' });
+  if (!senderProfile) return res.status(400).json({ error: 'Complete your assessment first.' });
 
-  // Check for existing request
+  // Check for existing request (either direction)
   const { data: existing } = await supabase
     .from('match_requests')
-    .select('id')
-    .eq('sender_username', sender.username)
-    .eq('receiver_username', targetUsername)
+    .select('id, status')
+    .or(`and(sender_username.eq.${sender.username},receiver_username.eq.${targetUsername}),and(sender_username.eq.${targetUsername},receiver_username.eq.${sender.username})`)
     .single();
-  if (existing) return res.status(400).json({ error: 'Request already sent to this user' });
+
+  if (existing) {
+    if (existing.status === 'pending') return res.status(400).json({ error: 'A request already exists between you two.' });
+    if (existing.status === 'accepted') return res.status(400).json({ error: 'You already have a completed blueprint with this user.' });
+  }
 
   // Create request
   const { error } = await supabase.from('match_requests').insert({

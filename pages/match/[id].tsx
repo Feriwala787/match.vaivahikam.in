@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
+import Layout from '@/components/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import TraitRadar from '@/components/TraitRadar';
+import ScoreBar from '@/components/ScoreBar';
 import type { MatchResult } from '@/lib/scoring';
 
 interface MatchData {
@@ -12,16 +15,15 @@ interface MatchData {
 }
 
 export default function MatchView() {
-  const { user, username, loading: authLoading } = useAuth();
+  const { user, username } = useAuth();
   const router = useRouter();
   const { id } = router.query;
   const [data, setData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push('/auth/login');
     if (id && username) loadMatch();
-  }, [authLoading, user, id, username]);
+  }, [id, username]);
 
   async function loadMatch() {
     const { data: match } = await supabase
@@ -38,122 +40,141 @@ export default function MatchView() {
     setLoading(false);
   }
 
-  if (loading || !data?.match_result) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return (
+    <ProtectedRoute>
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh] text-text-muted animate-pulse">Loading blueprint...</div>
+      </Layout>
+    </ProtectedRoute>
+  );
+
+  if (!data?.match_result) return (
+    <ProtectedRoute>
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh] text-text-muted">No match data available.</div>
+      </Layout>
+    </ProtectedRoute>
+  );
 
   const result = data.match_result;
-  const radarData = Object.entries(result.dimensionScores || {}).map(([key, val]) => ({
-    dimension: val.label,
-    score: val.score,
+  const partner = data.sender_username === username ? data.receiver_username : data.sender_username;
+
+  const radarData = Object.entries(result.dimensionScores || {}).map(([, val]) => ({
+    dimension: val.label.length > 15 ? val.label.slice(0, 15) + '…' : val.label,
+    value: val.score,
   }));
 
   return (
-    <div className="min-h-screen">
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-surface-light">
-        <span className="text-xl font-bold text-primary-light">🧬 Relational Blueprint</span>
-        <button onClick={() => router.push('/dashboard')} className="text-sm text-text-muted hover:text-text">← Dashboard</button>
-      </nav>
-
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Relational Blueprint</h1>
-          <p className="text-text-muted">
-            @{data.sender_username} × @{data.receiver_username}
-          </p>
-        </div>
-
-        {/* Overall Score */}
-        <div className="bg-surface rounded-2xl p-8 border border-surface-light text-center">
-          <div className={`text-6xl font-bold mb-2 ${
-            result.overallScore >= 70 ? 'text-success' :
-            result.overallScore >= 45 ? 'text-accent' : 'text-danger'
-          }`}>
-            {result.overallScore}%
+    <ProtectedRoute>
+      <Layout>
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-2">Relational Blueprint</h1>
+            <p className="text-text-muted">@{data.sender_username} × @{data.receiver_username}</p>
           </div>
-          <p className="text-text-muted">Overall Compatibility Score</p>
-          {!result.dealbreakersPass && (
-            <p className="text-danger mt-2 font-semibold">⚠️ Blocked by dealbreaker incompatibilities</p>
+
+          {/* Overall Score */}
+          <div className="bg-surface rounded-2xl p-8 border border-surface-light text-center">
+            <div className={`text-7xl font-bold mb-2 ${
+              result.overallScore >= 70 ? 'text-success' :
+              result.overallScore >= 45 ? 'text-accent' : 'text-danger'
+            }`}>
+              {result.overallScore}%
+            </div>
+            <p className="text-text-muted text-lg">Overall Compatibility</p>
+            {!result.dealbreakersPass && (
+              <div className="mt-4 px-4 py-2 rounded-lg bg-danger/10 border border-danger/30 inline-block">
+                <p className="text-danger font-semibold">⚠️ Blocked by fundamental incompatibilities</p>
+              </div>
+            )}
+            <div className="mt-3 flex justify-center gap-4 text-sm text-text-muted">
+              <span>Attachment: <span className="text-text">{result.attachmentCombo}</span></span>
+            </div>
+          </div>
+
+          {/* Dimension Radar */}
+          {radarData.length > 0 && (
+            <TraitRadar title="Dimension Proximity Map" data={radarData} />
           )}
-          <p className="text-sm text-text-muted mt-1">Attachment: {result.attachmentCombo}</p>
+
+          {/* Dimension Breakdown */}
+          {Object.keys(result.dimensionScores || {}).length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 border border-surface-light space-y-4">
+              <h3 className="text-lg font-semibold">Dimension Scores</h3>
+              {Object.entries(result.dimensionScores).map(([key, val]) => (
+                <ScoreBar key={key} label={val.label} score={val.score} />
+              ))}
+            </div>
+          )}
+
+          {/* Synergies */}
+          {result.synergies.length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 border border-success/20">
+              <h3 className="text-lg font-semibold mb-3 text-success">✓ Synergies — Areas of Strong Alignment</h3>
+              <ul className="space-y-2">
+                {result.synergies.map((s, i) => (
+                  <li key={i} className="text-sm text-text-muted flex items-start gap-2">
+                    <span className="text-success mt-0.5">●</span> {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Friction Points */}
+          {result.frictionPoints.length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 border border-accent/20">
+              <h3 className="text-lg font-semibold mb-3 text-accent">⚡ Friction Points — Areas Needing Discussion</h3>
+              <ul className="space-y-2">
+                {result.frictionPoints.map((f, i) => (
+                  <li key={i} className="text-sm text-text-muted flex items-start gap-2">
+                    <span className="text-accent mt-0.5">●</span> {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Risk Warnings */}
+          {result.riskWarnings.length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 border border-danger/30">
+              <h3 className="text-lg font-semibold mb-3 text-danger">⚠️ Risk Warnings</h3>
+              <ul className="space-y-3">
+                {result.riskWarnings.map((w, i) => (
+                  <li key={i} className="text-sm text-text-muted flex items-start gap-2">
+                    <span className="text-danger mt-0.5">●</span> {w}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Dealbreaker Conflicts */}
+          {result.dealbreakConflicts.length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 border border-danger/50">
+              <h3 className="text-lg font-semibold mb-3 text-danger">🚫 Dealbreaker Conflicts</h3>
+              <p className="text-sm text-text-muted mb-3">These are non-negotiable incompatibilities that cannot be resolved through compromise.</p>
+              <ul className="space-y-2">
+                {result.dealbreakConflicts.map((c, i) => (
+                  <li key={i} className="text-sm font-medium text-danger flex items-start gap-2">
+                    <span>✕</span> {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <div className="bg-surface-light rounded-xl p-4 text-center">
+            <p className="text-text-muted text-xs">
+              This report is generated from validated public-domain psychometric instruments.
+              It is not a clinical diagnosis and should not replace professional premarital counseling.
+              Use this as a starting point for deeper, honest conversation.
+            </p>
+          </div>
         </div>
-
-        {/* Radar Chart */}
-        {radarData.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 border border-surface-light">
-            <h2 className="text-lg font-semibold mb-4 text-center">Dimension Proximity Map</h2>
-            <ResponsiveContainer width="100%" height={400}>
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="#25253d" />
-                <PolarAngleAxis dataKey="dimension" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#94a3b8' }} />
-                <Radar name="Proximity" dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
-        {/* Synergies */}
-        {result.synergies.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 border border-surface-light">
-            <h2 className="text-lg font-semibold mb-3 text-success">✓ Synergies</h2>
-            <ul className="space-y-2">
-              {result.synergies.map((s, i) => (
-                <li key={i} className="text-sm text-text-muted flex items-start gap-2">
-                  <span className="text-success">•</span> {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Friction Points */}
-        {result.frictionPoints.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 border border-surface-light">
-            <h2 className="text-lg font-semibold mb-3 text-accent">⚡ Friction Points</h2>
-            <ul className="space-y-2">
-              {result.frictionPoints.map((f, i) => (
-                <li key={i} className="text-sm text-text-muted flex items-start gap-2">
-                  <span className="text-accent">•</span> {f}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Risk Warnings */}
-        {result.riskWarnings.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 border border-danger/30">
-            <h2 className="text-lg font-semibold mb-3 text-danger">⚠️ Risk Warnings</h2>
-            <ul className="space-y-2">
-              {result.riskWarnings.map((w, i) => (
-                <li key={i} className="text-sm text-text-muted flex items-start gap-2">
-                  <span className="text-danger">•</span> {w}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Dealbreaker Conflicts */}
-        {result.dealbreakConflicts.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 border border-danger/30">
-            <h2 className="text-lg font-semibold mb-3 text-danger">🚫 Dealbreaker Conflicts</h2>
-            <ul className="space-y-2">
-              {result.dealbreakConflicts.map((c, i) => (
-                <li key={i} className="text-sm text-text-muted flex items-start gap-2">
-                  <span className="text-danger">•</span> {c}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <p className="text-center text-text-muted text-xs">
-          This report is not a diagnosis. It is a data-driven starting point for deeper conversation.
-          Professional premarital counseling is always recommended.
-        </p>
-      </main>
-    </div>
+      </Layout>
+    </ProtectedRoute>
   );
 }
