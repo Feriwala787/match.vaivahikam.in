@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import Layout from '@/components/Layout';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <Layout>
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-surface rounded-2xl p-8 border border-surface-light">
         <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
         <p className="text-text-muted text-sm mb-6">Sign in to your Relational Blueprint account.</p>
@@ -65,5 +67,6 @@ export default function Login() {
         </p>
       </div>
     </div>
+    </Layout>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import Layout from '@/components/Layout';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -9,8 +10,17 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const { signUp } = useAuth();
   const router = useRouter();
+
+  async function checkUsername(name: string) {
+    if (name.length < 3) { setUsernameStatus('idle'); return; }
+    setUsernameStatus('checking');
+    const res = await fetch(`/api/auth/check-username?username=${name.toLowerCase()}`);
+    const data = await res.json();
+    setUsernameStatus(data.exists ? 'taken' : 'available');
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,12 +35,13 @@ export default function Register() {
 
     const { error } = await signUp(email, password, username.toLowerCase());
     if (error) setError(error);
-    else router.push('/assessment');
+    else router.push('/auth/verify');
     setLoading(false);
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <Layout>
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-surface rounded-2xl p-8 border border-surface-light">
         <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
         <p className="text-text-muted text-sm mb-6">Begin your Relational Blueprint assessment.</p>
@@ -41,11 +52,14 @@ export default function Register() {
             <input
               type="text"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={e => { setUsername(e.target.value); checkUsername(e.target.value); }}
               className="w-full px-4 py-2 rounded-lg bg-bg border border-surface-light focus:border-primary focus:outline-none"
               placeholder="your_unique_username"
               required
             />
+            {usernameStatus === 'checking' && <p className="text-text-muted text-xs mt-1">Checking...</p>}
+            {usernameStatus === 'available' && <p className="text-success text-xs mt-1">✓ Available</p>}
+            {usernameStatus === 'taken' && <p className="text-danger text-xs mt-1">✕ Already taken</p>}
           </div>
           <div>
             <label className="block text-sm mb-1 text-text-muted">Email</label>
@@ -87,5 +101,6 @@ export default function Register() {
         </p>
       </div>
     </div>
+    </Layout>
   );
 }

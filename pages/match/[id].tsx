@@ -93,6 +93,39 @@ export default function MatchView() {
             </div>
           </div>
 
+          {/* Category Scores */}
+          {result.categoryScores && (
+            <div className="bg-surface rounded-2xl p-6 border border-surface-light">
+              <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: 'Personality Match', score: result.categoryScores.personality, icon: '🧠' },
+                  { label: 'Emotional Intelligence', score: result.categoryScores.emotionalIntelligence, icon: '💚' },
+                  { label: 'Values Alignment', score: result.categoryScores.values, icon: '⚖️' },
+                  { label: 'Intellectual Match', score: result.categoryScores.intellectualMatch, icon: '📚' },
+                  { label: 'Coping Compatibility', score: result.categoryScores.copingCompatibility, icon: '🛡️' },
+                ].map(cat => (
+                  <div key={cat.label} className="flex items-center gap-3 p-3 rounded-lg bg-bg border border-surface-light">
+                    <span className="text-2xl">{cat.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{cat.label}</span>
+                        <span className={`font-bold ${
+                          cat.score >= 70 ? 'text-success' : cat.score >= 45 ? 'text-accent' : 'text-danger'
+                        }`}>{cat.score}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-surface-light rounded-full mt-1 overflow-hidden">
+                        <div className={`h-full rounded-full ${
+                          cat.score >= 70 ? 'bg-success' : cat.score >= 45 ? 'bg-accent' : 'bg-danger'
+                        }`} style={{ width: `${cat.score}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Dimension Radar */}
           {radarData.length > 0 && (
             <TraitRadar title="Dimension Proximity Map" data={radarData} />

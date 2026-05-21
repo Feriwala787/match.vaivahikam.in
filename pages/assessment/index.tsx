@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
+import { authFetch } from '@/lib/api';
 import { likertQuestions, dealbreakers, sections, TOTAL_QUESTIONS } from '@/lib/questions';
-import { computeTraitScores } from '@/lib/scoring';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -71,28 +70,17 @@ export default function Assessment() {
     if (answeredCount < TOTAL_QUESTIONS) return;
     setSubmitting(true);
 
-    const likertAnswers: Record<string, number> = {};
-    const dealbreakAnswers: Record<string, string> = {};
-    for (const [k, v] of Object.entries(answers)) {
-      if (typeof v === 'number') likertAnswers[k] = v;
-      else dealbreakAnswers[k] = v;
-    }
+    const res = await authFetch('/api/assessment/submit', {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    });
 
-    const traitScores = computeTraitScores(likertAnswers);
-
-    const { error } = await supabase.from('psych_profiles').upsert({
-      user_id: user!.id,
-      raw_answers: answers,
-      trait_scores: traitScores,
-      dealbreaker_answers: dealbreakAnswers,
-      completed_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' });
-
-    if (!error) {
+    const data = await res.json();
+    if (res.ok) {
       localStorage.removeItem(STORAGE_KEY);
       router.push('/profile');
     } else {
-      alert('Error saving: ' + error.message);
+      alert('Error saving: ' + (data.error || 'Unknown error'));
     }
     setSubmitting(false);
   }
