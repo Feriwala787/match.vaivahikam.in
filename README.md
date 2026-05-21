@@ -1,40 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🧬 Relational Blueprint (Core Engine)
 
-## Getting Started
+A non-profit, clinically grounded, dual-blind psychological assessment platform designed for arranged marriage compatibility.
 
-First, run the development server:
+## 📌 The Mission
+
+Most modern matchmaking apps optimize for user retention and quick swiping. Relational Blueprint is fundamentally different. Designed specifically for the arranged marriage context, this platform acts as a "costly signal" assessment. It requires a 1-to-2-hour commitment from users to complete a rigorously structured 200+ item psychometric battery based on public-domain psychological instruments.
+
+Our goal is not to maximize user bases, but to maximize human benefit by preventing toxic pairings and highlighting deep, foundational alignment.
+
+## 🚀 Features
+
+- **Dual-Blind Consent Architecture:** Privacy-first matching. Users take the assessment independently and must explicitly accept a username-based request before any psychological data is compared or shared.
+- **Open-Source Psychometrics:** Utilizes the IPIP-NEO (Big Five), ECR-R (Attachment), D-Core (Dark Traits), and World Values Survey items.
+- **Non-Compensatory Hard Gates:** Automatically filters out pairings with incompatible dealbreakers (e.g., family planning, in-law dynamics).
+- **Euclidean Distance Algorithm:** Calculates personality and emotional synergy using multidimensional distance metrics.
+- **Risk Matrix Penalty:** Backend logic that mathematically penalizes potentially abusive combinations (e.g., Anxious-Avoidant traps, high Dark Triad traits).
+- **Visual Match Dashboard:** Generates a comprehensive "Relational Blueprint" using Radar Charts to map synergies and friction points.
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js (Pages Router), React, Tailwind CSS, shadcn/ui |
+| Backend | Next.js API Routes (Serverless Functions) |
+| Database & Auth | Supabase (PostgreSQL) |
+| Data Visualization | Recharts |
+| Hosting / CI-CD | Netlify |
+
+## 🗄️ Database Schema Overview (Supabase)
+
+- **users** - Manages unique usernames and ties into Supabase Auth.
+- **psych_profiles** - Stores `raw_answers` (JSONB) and `trait_scores` (JSONB) to manage the massive 200-question dataset efficiently.
+- **match_requests** - Handles the dual-blind invite system (`sender_username`, `receiver_username`, `status`).
+
+## ⚙️ Local Development Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/relational-blueprint.git
+cd relational-blueprint
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Set up environment variables
+
+Create a `.env.local` file in the root directory and add your Supabase credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 🧮 The Matching Algorithm (Brief)
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+The core logic resides in `/pages/api/calculate-match.ts`.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+1. **Validation:** Checks if dealbreakers align. If false, compatibility = 0%.
+2. **Proximity:** Calculates the Euclidean distance for continuous variables (Big Five, EQ).
+3. **Penalty:** Applies percentage deductions based on the Risk Matrix (Toxicity & Attachment Clashes).
+4. **Output:** Returns a compiled JSON object mapping the exact friction points and synergies for the frontend dashboard.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚖️ License & Ethics
 
-## Learn More
+This project is built strictly for non-profit, altruistic purposes. It utilizes public-domain items from the International Personality Item Pool (IPIP). This platform does not provide medical diagnoses and should not replace professional premarital counseling.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Contributions to improve the algorithm, UI, or accessibility are welcome.
