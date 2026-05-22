@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSupabaseServer, getUser } from '@/lib/supabase-server';
+import { getSupabaseWithAuth, getUser } from '@/lib/supabase-server';
 import { calculateMatch } from '@/lib/scoring';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const user = await getUser(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const supabase = getSupabaseServer();
+  const supabase = getSupabaseWithAuth(req);
   const { requestId } = req.body;
   if (!requestId) return res.status(400).json({ error: 'Request ID required.' });
 
