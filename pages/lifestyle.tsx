@@ -13,6 +13,8 @@ const STEP_ICONS: Record<string, string> = {
   'Activity & Travel': '🏃',
   'Consumption & Pets': '🍽️',
   'Future Trajectory': '🚀',
+  'Household & Family': '🏠',
+  'Love Languages': '💕',
 };
 
 export default function LifestyleProfile() {

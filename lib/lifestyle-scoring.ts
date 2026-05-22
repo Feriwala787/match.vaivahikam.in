@@ -5,6 +5,7 @@ export interface LifestyleResult {
   sharedVibeTags: string[];
   icebreakerTable: Array<{ category: string; icon: string; userA: string; userB: string }>;
   conversationHooks: string[];
+  loveLanguages: { userA: string[]; userB: string[]; match: boolean; tip: string } | null;
 }
 
 type Answers = Record<string, string | string[]>;
@@ -48,9 +49,25 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
     hardGateFlags.push('Geographic Incompatibility: One wants to settle abroad while the other refuses to relocate.');
   }
 
+  // Aging parents — hard gate
+  const agingA = val(answersA, 'aging_parents');
+  const agingB = val(answersB, 'aging_parents');
+  if ((agingA === 'They will eventually live with us, and we will physically care for them' && agingB === 'They will remain completely independent') ||
+      (agingB === 'They will eventually live with us, and we will physically care for them' && agingA === 'They will remain completely independent')) {
+    hardGateFlags.push('Caregiving Conflict: One expects aging parents to live with them while the other expects complete independence. This causes catastrophic family conflict.');
+  }
+
+  // Family influence — hard gate
+  const influenceA = val(answersA, 'family_influence');
+  const influenceB = val(answersB, 'family_influence');
+  if ((influenceA === 'Heavy influence \u2014 they know best' && influenceB === 'Zero influence \u2014 we decide alone') ||
+      (influenceB === 'Heavy influence \u2014 they know best' && influenceA === 'Zero influence \u2014 we decide alone')) {
+    hardGateFlags.push('Family Authority Clash: One wants heavy parental influence over decisions while the other wants complete autonomy.');
+  }
+
   // If hard gates triggered, score = 0
   if (hardGateFlags.length > 0) {
-    return { overallScore: 0, hardGateFlags, frictionPenalties, sharedVibeTags: [], icebreakerTable: [], conversationHooks: [] };
+    return { overallScore: 0, hardGateFlags, frictionPenalties, sharedVibeTags: [], icebreakerTable: [], conversationHooks: [], loveLanguages: null };
   }
 
   // ═══ TIER 2: CORE FRICTION PENALTIES ═══
@@ -89,6 +106,29 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
       (finB === 'Completely merged' && finA === 'Completely separate')) {
     score -= 10;
     frictionPenalties.push('Financial Management: Completely merged vs. completely separate — fundamental disagreement on household money.');
+  }
+
+  // Chore Economy friction
+  const choreConflicts: string[] = [];
+  const cookA = val(answersA, 'chore_cooking');
+  const cookB = val(answersB, 'chore_cooking');
+  if (cookA === 'My partner will' && cookB === 'My partner will') {
+    choreConflicts.push('Cooking: Both expect the other to cook.');
+  }
+  const mentalA = val(answersA, 'chore_mental_load');
+  const mentalB = val(answersB, 'chore_mental_load');
+  if (mentalA === 'My partner will' && mentalB === 'My partner will') {
+    choreConflicts.push('Mental Load: Both expect the other to manage household logistics.');
+  }
+  const cleanA = val(answersA, 'chore_cleaning');
+  const cleanB = val(answersB, 'chore_cleaning');
+  if (cleanA === 'My partner will' && cleanB === 'My partner will') {
+    choreConflicts.push('Cleaning: Both expect the other to handle it.');
+  }
+  if (choreConflicts.length > 0) {
+    const bothWork = (careerA === 'Dual-income household' || careerB === 'Dual-income household');
+    score -= choreConflicts.length * 5;
+    frictionPenalties.push(`Chore Economy${bothWork ? ' (⚠️ Both work full-time!)' : ''}: ${choreConflicts.join(' ')}`);
   }
 
   // Ultimate dream mismatch
@@ -194,6 +234,32 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
     conversationHooks.push(`You share the same 20-year dream: "${dreamA}". That's rare and powerful.`);
   }
 
+  // ═══ LOVE LANGUAGES ═══
+  const loveA = arr(answersA, 'love_language_rank');
+  const loveB = arr(answersB, 'love_language_rank');
+  let loveLanguages: { userA: string[]; userB: string[]; match: boolean; tip: string } | null = null;
+
+  if (loveA.length >= 2 && loveB.length >= 2) {
+    const topA = loveA.slice(0, 2);
+    const topB = loveB.slice(0, 2);
+    const overlap = topA.some(l => topB.includes(l));
+    if (overlap) {
+      score += 5;
+      sharedVibeTags.push('💕 Love Languages Aligned');
+    }
+
+    // Generate tip based on partner's #1
+    const partnerBTop = loveB[0] || '';
+    let tip = '';
+    if (partnerBTop.includes('Words')) tip = 'Your partner feels most loved through Words of Affirmation. Tell them you appreciate them — often.';
+    else if (partnerBTop.includes('Acts of Service')) tip = 'Your partner feels most loved through Acts of Service. Instead of buying a gift, try making them dinner after a long day.';
+    else if (partnerBTop.includes('Gifts')) tip = 'Your partner feels most loved through Thoughtful Gifts. It\'s not about cost — it\'s about showing you thought of them.';
+    else if (partnerBTop.includes('Quality Time')) tip = 'Your partner feels most loved through Quality Time. Put the phone away and give them your full attention.';
+    else if (partnerBTop.includes('Touch')) tip = 'Your partner feels most loved through Physical Touch. Hold their hand, hug them — small gestures matter.';
+
+    loveLanguages = { userA: topA, userB: topB, match: overlap, tip };
+  }
+
   // Cap score 0-100
   score = Math.max(0, Math.min(100, score));
 
@@ -218,5 +284,5 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
     }
   }
 
-  return { overallScore: score, hardGateFlags, frictionPenalties, sharedVibeTags, icebreakerTable, conversationHooks };
+  return { overallScore: score, hardGateFlags, frictionPenalties, sharedVibeTags, icebreakerTable, conversationHooks, loveLanguages };
 }

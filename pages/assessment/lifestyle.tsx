@@ -7,7 +7,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const STORAGE_KEY = 'rb_lifestyle_progress';
-const STEPS = ['Leisure & Entertainment', 'Activity & Travel', 'Consumption & Pets', 'Future Trajectory'];
+const STEPS = ['Leisure & Entertainment', 'Activity & Travel', 'Consumption & Pets', 'Future Trajectory', 'Household & Family', 'Love Languages'];
 
 export default function LifestyleAssessment() {
   const { user } = useAuth();
@@ -127,6 +127,35 @@ export default function LifestyleAssessment() {
                     placeholder="Type your answer..."
                     className="w-full px-4 py-2 rounded-lg bg-bg border border-surface-light focus:border-secondary focus:outline-none text-sm"
                   />
+                )}
+
+                {q.type === 'rank' && q.options && (
+                  <div>
+                    <p className="text-xs text-text-muted mb-2">Tap to set your ranking (1 = most important)</p>
+                    <div className="space-y-2">
+                      {(() => {
+                        const ranked = (answers[q.id] as string[]) || [];
+                        const unranked = q.options!.filter(o => !ranked.includes(o));
+                        return (
+                          <>
+                            {ranked.map((item, idx) => (
+                              <div key={item} className="flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-full bg-secondary text-white text-xs flex items-center justify-center font-bold">{idx + 1}</span>
+                                <button onClick={() => setAnswer(q.id, ranked.filter(r => r !== item))} className="flex-1 text-left px-3 py-2 rounded-lg text-xs bg-secondary/10 text-secondary border border-secondary/20">
+                                  {item}
+                                </button>
+                              </div>
+                            ))}
+                            {unranked.map(item => (
+                              <button key={item} onClick={() => setAnswer(q.id, [...ranked, item])} className="w-full text-left px-3 py-2 rounded-lg text-xs border border-surface-light text-text-muted hover:border-secondary/50 hover:text-text transition">
+                                {item}
+                              </button>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 )}
               </div>
             ))}

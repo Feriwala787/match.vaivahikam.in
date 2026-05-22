@@ -274,6 +274,30 @@ export default function MatchView() {
                   </div>
                 </div>
               )}
+
+              {/* Love Languages */}
+              {result.lifestyle.loveLanguages && (
+                <div className="p-4 rounded-lg bg-bg border border-surface-light">
+                  <h4 className="text-sm font-semibold mb-3">💕 Love Languages</h4>
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <p className="text-xs text-text-muted mb-1">@{data.sender_username}&apos;s top:</p>
+                      {result.lifestyle.loveLanguages.userA.map((l, i) => (
+                        <p key={i} className="text-xs">{i + 1}. {l.split('(')[0].trim()}</p>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-xs text-text-muted mb-1">@{data.receiver_username}&apos;s top:</p>
+                      {result.lifestyle.loveLanguages.userB.map((l, i) => (
+                        <p key={i} className="text-xs">{i + 1}. {l.split('(')[0].trim()}</p>
+                      ))}
+                    </div>
+                  </div>
+                  {result.lifestyle.loveLanguages.tip && (
+                    <p className="text-xs text-secondary bg-secondary/5 p-2 rounded">💡 {result.lifestyle.loveLanguages.tip}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

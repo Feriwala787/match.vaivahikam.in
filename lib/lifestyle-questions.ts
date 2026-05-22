@@ -2,7 +2,7 @@ export interface LifestyleQuestion {
   id: string;
   text: string;
   category: string;
-  type: 'single' | 'multi' | 'text';
+  type: 'single' | 'multi' | 'text' | 'rank';
   options?: string[];
   parentId?: string;
   showWhen?: string[];
@@ -91,6 +91,25 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
 
   // Ultimate Dream
   { id: 'ultimate_dream', text: 'When you look 20 years into the future, what is your ultimate dream?', category: 'Future Trajectory', type: 'single', options: ['Bustling house full of family', 'Quiet countryside life', 'High-flying urban luxury', 'Social impact & legacy', 'Early retirement & freedom'] },
+
+  // ═══════════════════════════════════════════
+  // STEP 5: HOUSEHOLD & FAMILY DYNAMICS
+  // ═══════════════════════════════════════════
+
+  // Chore Economy
+  { id: 'chore_cooking', text: 'Who do you expect to do the daily cooking?', category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
+  { id: 'chore_mental_load', text: "Who should manage the 'Mental Load' (remembering grocery lists, paying bills, scheduling appointments)?", category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'Whoever is free'] },
+  { id: 'chore_cleaning', text: 'Who handles cleaning and household maintenance?', category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
+
+  // Extended Family Obligations
+  { id: 'aging_parents', text: 'What are your expectations for supporting aging parents in the future?', category: 'Household & Family', type: 'single', options: ['They will eventually live with us, and we will physically care for them', 'We will support them financially, but live separately', 'They will remain completely independent'] },
+  { id: 'family_influence', text: 'How much influence should your parents have over your major life decisions (buying a house, raising kids)?', category: 'Household & Family', type: 'single', options: ['Heavy influence — they know best', 'A guiding voice — we listen but decide', 'Zero influence — we decide alone'] },
+
+  // ═══════════════════════════════════════════
+  // STEP 6: LOVE LANGUAGES & APPRECIATION
+  // ═══════════════════════════════════════════
+
+  { id: 'love_language_rank', text: 'Rank these in order of what makes you feel MOST loved and appreciated (drag to reorder):', category: 'Love Languages', type: 'rank', options: ['Hearing "I love you" or receiving compliments (Words)', 'My partner helping me with a heavy workload (Acts of Service)', 'Receiving thoughtful gifts (Gifts)', 'Undivided, screen-free attention (Quality Time)', 'Holding hands or physical affection (Touch)'] },
 ];
 
 // Get visible questions based on current answers (conditional branching)
