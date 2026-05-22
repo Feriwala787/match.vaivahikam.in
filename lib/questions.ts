@@ -6,13 +6,14 @@ import { darkTriad } from './instruments/dark-triad';
 import { teique } from './instruments/teique';
 import { briefCope } from './instruments/brief-cope';
 import { nfc } from './instruments/nfc';
+import { behavioral } from './instruments/behavioral';
 import { dealbreakers } from './instruments/dealbreakers';
 
 // Re-export dealbreakers for use in scoring
 export { dealbreakers };
 
-// All Likert-scale questions combined (265 items total)
-export const likertQuestions = [...ipipNeo, ...ecrR, ...darkTriad, ...teique, ...briefCope, ...nfc];
+// All Likert-scale questions combined
+export const likertQuestions = [...ipipNeo, ...ecrR, ...darkTriad, ...teique, ...briefCope, ...behavioral, ...nfc];
 
 // Total question count (Likert + Dealbreakers)
 export const TOTAL_QUESTIONS = likertQuestions.length + dealbreakers.length;
@@ -23,7 +24,7 @@ export const sections = [
   { id: 'attachment', label: 'Relational Style (Attachment)', instrument: 'ECR-R' as const, count: 36 },
   { id: 'dark_traits', label: 'Protective Filter (Dark Traits)', instrument: 'DARK-TRIAD' as const, count: 27 },
   { id: 'emotional_intelligence', label: 'Emotional Navigation (EI)', instrument: 'TEIQue' as const, count: 30 },
-  { id: 'coping', label: 'Coping Mechanisms (Stress)', instrument: 'BRIEF-COPE' as const, count: 14 },
+  { id: 'coping', label: 'Coping & Situational Judgment', instrument: 'BRIEF-COPE' as const, count: 23 },
   { id: 'cognition', label: 'Intellectual Match (NFC)', instrument: 'NFC' as const, count: 18 },
   { id: 'dealbreakers', label: 'Values & Boundaries', instrument: 'DEALBREAKER' as const, count: 20 },
 ];

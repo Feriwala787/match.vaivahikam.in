@@ -11,10 +11,10 @@ type Answers = Record<string, string | string[]>;
 const STEP_ICONS: Record<string, string> = {
   'Leisure & Entertainment': '🎬',
   'Activity & Travel': '🏃',
-  'Consumption & Pets': '🍽️',
-  'Future Trajectory': '🚀',
-  'Household & Family': '🏠',
-  'Love Languages': '💕',
+  'Consumption & Daily Life': '🍽️',
+  'Career & Finances': '💼',
+  'Geography & Family': '🌍',
+  'Future & Parenting': '🚀',
 };
 
 export default function LifestyleProfile() {

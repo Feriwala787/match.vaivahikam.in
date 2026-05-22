@@ -55,61 +55,58 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   // ═══════════════════════════════════════════
 
   // Fashion
-  { id: 'fashion_style', text: 'What is your general approach to clothing and fashion?', category: 'Consumption & Pets', type: 'single', options: ['Strictly branded / designer wear', 'Comfort is more important than brands', 'A mix of both', 'Traditional/ethnic wear mostly', 'I do not care about fashion at all'] },
+  { id: 'fashion_style', text: 'What is your general approach to clothing and fashion?', category: 'Consumption & Daily Life', type: 'single', options: ['Strictly branded / designer wear', 'Comfort is more important than brands', 'A mix of both', 'Traditional/ethnic wear mostly', 'I do not care about fashion at all'] },
 
   // Dining
-  { id: 'dining_frequency', text: 'How often do you eat out or order food?', category: 'Consumption & Pets', type: 'single', options: ['Multiple times a week', 'About once a week', 'Rarely / Special occasions only'] },
-  { id: 'dining_vibe', text: 'What is your preferred dining vibe?', category: 'Consumption & Pets', type: 'single', options: ['Fine dining / Fancy restaurants', 'Casual cafes', 'Street food', 'Pubs / Lounges'], parentId: 'dining_frequency', showWhen: ['Multiple times a week', 'About once a week'] },
-  { id: 'dining_favorite', text: 'What is your absolute favorite dish or cuisine?', category: 'Consumption & Pets', type: 'text', parentId: 'dining_frequency', showWhen: ['Multiple times a week', 'About once a week'], optional: true },
+  { id: 'dining_frequency', text: 'How often do you eat out or order food?', category: 'Consumption & Daily Life', type: 'single', options: ['Multiple times a week', 'About once a week', 'Rarely / Special occasions only'] },
+  { id: 'dining_vibe', text: 'What is your preferred dining vibe?', category: 'Consumption & Daily Life', type: 'single', options: ['Fine dining / Fancy restaurants', 'Casual cafes', 'Street food', 'Pubs / Lounges'], parentId: 'dining_frequency', showWhen: ['Multiple times a week', 'About once a week'] },
+  { id: 'dining_favorite', text: 'What is your absolute favorite dish or cuisine?', category: 'Consumption & Daily Life', type: 'text', parentId: 'dining_frequency', showWhen: ['Multiple times a week', 'About once a week'], optional: true },
 
   // Pets
-  { id: 'pets_preference', text: 'Do you want pets at home?', category: 'Consumption & Pets', type: 'single', options: ['Yes, absolutely', 'No, I prefer a pet-free home', 'I am neutral / okay either way'] },
-  { id: 'pets_type', text: 'Are you a dog person, a cat person, or both?', category: 'Consumption & Pets', type: 'single', options: ['Dogs', 'Cats', 'Both', 'Other'], parentId: 'pets_preference', showWhen: ['Yes, absolutely'] },
+  { id: 'pets_preference', text: 'Do you want pets at home?', category: 'Consumption & Daily Life', type: 'single', options: ['Yes, absolutely', 'No, I prefer a pet-free home', 'I am neutral / okay either way'] },
+  { id: 'pets_type', text: 'Are you a dog person, a cat person, or both?', category: 'Consumption & Daily Life', type: 'single', options: ['Dogs', 'Cats', 'Both', 'Other'], parentId: 'pets_preference', showWhen: ['Yes, absolutely'] },
+
+  // Love Languages (placed with daily habits — how you show love daily)
+  { id: 'love_language_rank', text: 'Rank these in order of what makes you feel MOST loved and appreciated (tap to rank, 1 = most important):', category: 'Consumption & Daily Life', type: 'rank', options: ['Hearing "I love you" or receiving compliments (Words)', 'My partner helping me with a heavy workload (Acts of Service)', 'Receiving thoughtful gifts (Gifts)', 'Undivided, screen-free attention (Quality Time)', 'Holding hands or physical affection (Touch)'] },
 
   // ═══════════════════════════════════════════
-  // STEP 4: FUTURE TRAJECTORY (Critical)
+  // STEP 4: CAREER, FINANCES & CHORE ECONOMY
   // ═══════════════════════════════════════════
 
   // Work-Life
-  { id: 'work_philosophy', text: 'What is your philosophy on work?', category: 'Future Trajectory', type: 'single', options: ['Work is my passion — I go all in', 'Strict 9-to-5 boundary', 'Flexible integration of work and life'] },
+  { id: 'work_philosophy', text: 'What is your philosophy on work?', category: 'Career & Finances', type: 'single', options: ['Work is my passion — I go all in', 'Strict 9-to-5 boundary', 'Flexible integration of work and life'] },
+  { id: 'partner_career', text: "What are your expectations for your partner's career after marriage?", category: 'Career & Finances', type: 'single', options: ['Dual-income household', 'Traditional single-income', 'Flexible — whatever works', 'Entrepreneurial duo'] },
+  { id: 'spending_habits', text: 'How would you describe your saving habits?', category: 'Career & Finances', type: 'single', options: ['Aggressive saver', 'Balanced — save and enjoy', 'Live in the moment'] },
+  { id: 'finances_merged', text: 'How do you envision managing money in marriage?', category: 'Career & Finances', type: 'single', options: ['Completely merged', 'Completely separate', 'Hybrid approach'] },
 
-  // Partner Career
-  { id: 'partner_career', text: "What are your expectations for your partner's career after marriage?", category: 'Future Trajectory', type: 'single', options: ['Dual-income household', 'Traditional single-income', 'Flexible — whatever works', 'Entrepreneurial duo'] },
-
-  // Spending
-  { id: 'spending_habits', text: 'How would you describe your saving habits?', category: 'Future Trajectory', type: 'single', options: ['Aggressive saver', 'Balanced — save and enjoy', 'Live in the moment'] },
-
-  // Household Finances
-  { id: 'finances_merged', text: 'How do you envision managing money in marriage?', category: 'Future Trajectory', type: 'single', options: ['Completely merged', 'Completely separate', 'Hybrid approach'] },
-
-  // Geography
-  { id: 'geography_settle', text: 'Where do you see yourself settling down long-term?', category: 'Future Trajectory', type: 'single', options: ['Current city', 'Another major domestic city', 'Settle abroad', 'Open to anywhere'] },
-  { id: 'geography_where', text: 'Which specific region or country?', category: 'Future Trajectory', type: 'text', parentId: 'geography_settle', showWhen: ['Settle abroad', 'Open to anywhere'], optional: true },
-
-  // Relocation
-  { id: 'relocation_willingness', text: "Are you willing to relocate for your partner's career?", category: 'Future Trajectory', type: 'single', options: ['Yes, absolutely', 'Yes, with conditions', 'No, my location is fixed'] },
-
-  // Ultimate Dream
-  { id: 'ultimate_dream', text: 'When you look 20 years into the future, what is your ultimate dream?', category: 'Future Trajectory', type: 'single', options: ['Bustling house full of family', 'Quiet countryside life', 'High-flying urban luxury', 'Social impact & legacy', 'Early retirement & freedom'] },
+  // Chore Economy (belongs with career — who works, who cooks, who pays)
+  { id: 'chore_cooking', text: 'Who do you expect to do the daily cooking?', category: 'Career & Finances', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
+  { id: 'chore_mental_load', text: "Who should manage the 'Mental Load' (remembering grocery lists, paying bills, scheduling appointments)?", category: 'Career & Finances', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'Whoever is free'] },
+  { id: 'chore_cleaning', text: 'Who handles cleaning and household maintenance?', category: 'Career & Finances', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
 
   // ═══════════════════════════════════════════
-  // STEP 5: HOUSEHOLD & FAMILY DYNAMICS
+  // STEP 5: GEOGRAPHY & FAMILY OBLIGATIONS
   // ═══════════════════════════════════════════
 
-  // Chore Economy
-  { id: 'chore_cooking', text: 'Who do you expect to do the daily cooking?', category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
-  { id: 'chore_mental_load', text: "Who should manage the 'Mental Load' (remembering grocery lists, paying bills, scheduling appointments)?", category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'Whoever is free'] },
-  { id: 'chore_cleaning', text: 'Who handles cleaning and household maintenance?', category: 'Household & Family', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
+  { id: 'geography_settle', text: 'Where do you see yourself settling down long-term?', category: 'Geography & Family', type: 'single', options: ['Current city', 'Another major domestic city', 'Settle abroad', 'Open to anywhere'] },
+  { id: 'geography_where', text: 'Which specific region or country?', category: 'Geography & Family', type: 'text', parentId: 'geography_settle', showWhen: ['Settle abroad', 'Open to anywhere'], optional: true },
+  { id: 'relocation_willingness', text: "Are you willing to relocate for your partner's career?", category: 'Geography & Family', type: 'single', options: ['Yes, absolutely', 'Yes, with conditions', 'No, my location is fixed'] },
 
-  // Extended Family Obligations
-  { id: 'aging_parents', text: 'What are your expectations for supporting aging parents in the future?', category: 'Household & Family', type: 'single', options: ['They will eventually live with us, and we will physically care for them', 'We will support them financially, but live separately', 'They will remain completely independent'] },
-  { id: 'family_influence', text: 'How much influence should your parents have over your major life decisions (buying a house, raising kids)?', category: 'Household & Family', type: 'single', options: ['Heavy influence — they know best', 'A guiding voice — we listen but decide', 'Zero influence — we decide alone'] },
+  // Extended Family (belongs with geography — where you live depends on parents)
+  { id: 'aging_parents', text: 'What are your expectations for supporting aging parents in the future?', category: 'Geography & Family', type: 'single', options: ['They will eventually live with us, and we will physically care for them', 'We will support them financially, but live separately', 'They will remain completely independent'] },
+  { id: 'family_influence', text: 'How much influence should your parents have over your major life decisions (buying a house, raising kids)?', category: 'Geography & Family', type: 'single', options: ['Heavy influence — they know best', 'A guiding voice — we listen but decide', 'Zero influence — we decide alone'] },
 
   // ═══════════════════════════════════════════
-  // STEP 6: LOVE LANGUAGES & APPRECIATION
+  // STEP 6: FUTURE TRAJECTORY & PARENTING
   // ═══════════════════════════════════════════
 
-  { id: 'love_language_rank', text: 'Rank these in order of what makes you feel MOST loved and appreciated (drag to reorder):', category: 'Love Languages', type: 'rank', options: ['Hearing "I love you" or receiving compliments (Words)', 'My partner helping me with a heavy workload (Acts of Service)', 'Receiving thoughtful gifts (Gifts)', 'Undivided, screen-free attention (Quality Time)', 'Holding hands or physical affection (Touch)'] },
+  { id: 'ultimate_dream', text: 'When you look 20 years into the future, what is your ultimate dream?', category: 'Future & Parenting', type: 'single', options: ['Bustling house full of family', 'Quiet countryside life', 'High-flying urban luxury', 'Social impact & legacy', 'Early retirement & freedom'] },
+
+  // Parenting Philosophy (belongs with future trajectory)
+  { id: 'parenting_discipline', text: 'How do you believe children should be disciplined?', category: 'Future & Parenting', type: 'single', options: ['Strict rules and consequences', 'Gentle guidance and conversation', 'A mix of both — depends on the situation'] },
+  { id: 'parenting_education', text: "What is your view on a child's academic success?", category: 'Future & Parenting', type: 'single', options: ['They must be pushed to be at the top of their class', 'They should pursue what makes them happy, even if it\'s not traditional', 'Balance — academics matter but so does their mental health'] },
+  { id: 'parenting_religion', text: 'How important is it that your children strictly follow your religious or cultural traditions?', category: 'Future & Parenting', type: 'single', options: ['Non-negotiable — they must follow our traditions', 'Somewhat important — expose them but don\'t force', 'Let them choose when they are older'] },
+  { id: 'parenting_screen', text: 'What is your stance on screen time for children?', category: 'Future & Parenting', type: 'single', options: ['Strictly limited — minimal screens', 'Moderate — supervised and educational', 'Relaxed — they\'ll figure it out'] },
 ];
 
 // Get visible questions based on current answers (conditional branching)

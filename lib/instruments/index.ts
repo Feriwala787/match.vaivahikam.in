@@ -5,4 +5,5 @@ export { darkTriad } from './dark-triad';
 export { teique } from './teique';
 export { briefCope } from './brief-cope';
 export { nfc } from './nfc';
+export { behavioral, sjtScoring } from './behavioral';
 export { dealbreakers } from './dealbreakers';
