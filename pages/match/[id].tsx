@@ -201,50 +201,77 @@ export default function MatchView() {
 
           {/* Lifestyle & Hobbies */}
           {result.lifestyle && (
-            <div className="bg-surface rounded-2xl p-6 border border-secondary/20">
-              <h3 className="text-lg font-semibold mb-4">🎨 Lifestyle & Hobbies Match — <span className="text-secondary">{result.lifestyle.overallScore}%</span></h3>
+            <div className="bg-surface rounded-2xl p-6 border border-secondary/20 space-y-5">
+              <h3 className="text-lg font-semibold">🎨 Lifestyle Alignment — <span className={`${
+                result.lifestyle.overallScore >= 60 ? 'text-success' : result.lifestyle.overallScore >= 40 ? 'text-accent' : 'text-danger'
+              }`}>{result.lifestyle.overallScore}%</span></h3>
 
-              {Object.entries(result.lifestyle.categoryScores).length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
-                  {Object.entries(result.lifestyle.categoryScores).map(([cat, score]) => (
-                    <div key={cat} className="text-center p-2 rounded-lg bg-bg border border-surface-light">
-                      <div className={`text-lg font-bold ${score >= 70 ? 'text-success' : score >= 40 ? 'text-accent' : 'text-text-muted'}`}>{score}%</div>
-                      <div className="text-xs text-text-muted">{cat}</div>
-                    </div>
+              {/* Hard Gate Flags */}
+              {result.lifestyle.hardGateFlags.length > 0 && (
+                <div className="p-3 rounded-lg bg-danger/10 border border-danger/30">
+                  <h4 className="text-sm font-semibold text-danger mb-2">🚫 Lifestyle Dealbreakers</h4>
+                  {result.lifestyle.hardGateFlags.map((f, i) => (
+                    <p key={i} className="text-xs text-text-muted">• {f}</p>
                   ))}
                 </div>
               )}
 
-              {result.lifestyle.sharedInterests.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-success mb-2">✓ Shared Interests</h4>
-                  <ul className="space-y-1">
-                    {result.lifestyle.sharedInterests.slice(0, 6).map((s, i) => (
-                      <li key={i} className="text-xs text-text-muted">• {s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {result.lifestyle.conversationHooks.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-secondary mb-2">💬 Conversation Starters</h4>
-                  <ul className="space-y-1">
-                    {result.lifestyle.conversationHooks.map((h, i) => (
-                      <li key={i} className="text-xs text-text-muted">• {h}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {result.lifestyle.differences.length > 0 && (
+              {/* Friction Penalties */}
+              {result.lifestyle.frictionPenalties.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-accent mb-2">⚡ Different Vibes</h4>
-                  <ul className="space-y-1">
-                    {result.lifestyle.differences.slice(0, 4).map((d, i) => (
-                      <li key={i} className="text-xs text-text-muted">• {d}</li>
+                  <h4 className="text-sm font-semibold text-accent mb-2">⚡ Daily Friction Points</h4>
+                  {result.lifestyle.frictionPenalties.map((f, i) => (
+                    <p key={i} className="text-xs text-text-muted mb-1">• {f}</p>
+                  ))}
+                </div>
+              )}
+
+              {/* Shared Vibe Tags */}
+              {result.lifestyle.sharedVibeTags.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-success mb-2">✓ Shared Vibes</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {result.lifestyle.sharedVibeTags.map((tag, i) => (
+                      <span key={i} className="px-3 py-1 rounded-full text-xs bg-success/10 text-success border border-success/20">{tag}</span>
                     ))}
-                  </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Conversation Hooks */}
+              {result.lifestyle.conversationHooks.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-secondary mb-2">💬 Conversation Starters</h4>
+                  {result.lifestyle.conversationHooks.map((h, i) => (
+                    <p key={i} className="text-xs text-text-muted mb-1">• {h}</p>
+                  ))}
+                </div>
+              )}
+
+              {/* Icebreaker Table */}
+              {result.lifestyle.icebreakerTable.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">🧠 Icebreaker Cheat Sheet</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-surface-light">
+                          <th className="text-left py-2 text-text-muted font-normal">Category</th>
+                          <th className="text-left py-2 text-text-muted font-normal">@{data.sender_username}</th>
+                          <th className="text-left py-2 text-text-muted font-normal">@{data.receiver_username}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {result.lifestyle.icebreakerTable.map((row, i) => (
+                          <tr key={i} className="border-b border-surface-light/50">
+                            <td className="py-2">{row.icon} {row.category}</td>
+                            <td className="py-2 text-text-muted">{row.userA}</td>
+                            <td className="py-2 text-text-muted">{row.userB}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
