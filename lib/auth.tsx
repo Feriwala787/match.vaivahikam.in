@@ -27,8 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchUsername(session.user.id);
-      else setUsername(null);
+      if (session?.user) {
+        // Ensure user row exists (catches failed signUp inserts)
+        const meta = session.user.user_metadata;
+        if (meta?.username) {
+          ensureUserRow(session.user.id, meta.username);
+        } else {
+          fetchUsername(session.user.id);
+        }
+      } else {
+        setUsername(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -50,12 +59,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signUp(email: string, password: string, username: string) {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  async function signUp(email: string, password: string, usernameVal: string) {
+    // Check if username is taken first
+    const { data: existing } = await supabase.from('users').select('id').eq('username', usernameVal).maybeSingle();
+    if (existing) return { error: 'Username already taken.' };
+
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username: usernameVal } } });
     if (error) return { error: error.message };
+
+    // Try to insert user row immediately (may fail due to RLS timing)
     if (data.user) {
-      const { error: insertErr } = await supabase.from('users').insert({ id: data.user.id, username });
-      if (insertErr) return { error: insertErr.message };
+      await supabase.from('users').insert({ id: data.user.id, username: usernameVal }).single();
+      // If it fails, ensureUserRow will catch it on next login
     }
     return { error: null };
   }
