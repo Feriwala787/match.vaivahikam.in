@@ -102,9 +102,9 @@ export default function MatchView() {
                 {[
                   { label: 'Personality Match', score: result.categoryScores.personality, icon: '🧠' },
                   { label: 'Emotional Intelligence', score: result.categoryScores.emotionalIntelligence, icon: '💚' },
-                  { label: 'Values Alignment', score: result.categoryScores.values, icon: '⚖️' },
-                  { label: 'Intellectual Match', score: result.categoryScores.intellectualMatch, icon: '📚' },
                   { label: 'Coping Compatibility', score: result.categoryScores.copingCompatibility, icon: '🛡️' },
+                  { label: 'Intellectual Match', score: result.categoryScores.intellectualMatch, icon: '📚' },
+                  ...(result.categoryScores.secureBonus > 0 ? [{ label: 'Secure Attachment Bonus', score: result.categoryScores.secureBonus, icon: '💞' }] : []),
                 ].map(cat => (
                   <div key={cat.label} className="flex items-center gap-3 p-3 rounded-lg bg-bg border border-surface-light">
                     <span className="text-2xl">{cat.icon}</span>

@@ -38,10 +38,10 @@ export interface MatchResult {
   attachmentCombo: string;
   categoryScores: {
     personality: number;
-    values: number;
     emotionalIntelligence: number;
     intellectualMatch: number;
     copingCompatibility: number;
+    secureBonus: number;
   };
 }
 
@@ -149,8 +149,9 @@ function euclideanProximity(a: TraitScores, b: TraitScores, keys: (keyof TraitSc
 // ═══ ATTACHMENT CLASSIFICATION ═══
 
 function getAttachmentStyle(anxiety: number, avoidance: number): 'secure' | 'anxious' | 'avoidant' | 'fearful' {
-  const anxHigh = anxiety > 50;
-  const avHigh = avoidance > 50;
+  // Clinical threshold: 65 (not 50) — 50 is just average, not clinically significant
+  const anxHigh = anxiety > 65;
+  const avHigh = avoidance > 65;
   if (!anxHigh && !avHigh) return 'secure';
   if (anxHigh && !avHigh) return 'anxious';
   if (!anxHigh && avHigh) return 'avoidant';
@@ -250,6 +251,16 @@ function computeRiskPenalty(a: TraitScores, b: TraitScores): { penalty: number; 
   // 4. ADDITIONAL CLINICAL OVERRIDES
   // ─────────────────────────────────────────────────────────────────
 
+  // Traditional Narcissism Trap (arranged marriage specific)
+  // Moderately narcissistic + highly agreeable & anxious partner = exploitation
+  if (a.narcissism > 70 && b.agreeableness > 70 && b.neuroticism > 60) {
+    penalty += 20;
+    warnings.push('⚠️ Traditional Narcissism Trap: One partner shows elevated narcissism paired with a highly empathetic, anxious partner. The agreeable partner may suppress their own needs to avoid conflict, leading to chronic resentment and emotional depletion.');
+  } else if (b.narcissism > 70 && a.agreeableness > 70 && a.neuroticism > 60) {
+    penalty += 20;
+    warnings.push('⚠️ Traditional Narcissism Trap: One partner shows elevated narcissism paired with a highly empathetic, anxious partner. The agreeable partner may suppress their own needs to avoid conflict, leading to chronic resentment and emotional depletion.');
+  }
+
   // EQ Asymmetry — large gap means one partner carries all emotional labor
   const eqA = (a.eq_wellbeing + a.eq_self_control + a.eq_emotionality + a.eq_sociability) / 4;
   const eqB = (b.eq_wellbeing + b.eq_self_control + b.eq_emotionality + b.eq_sociability) / 4;
@@ -306,13 +317,13 @@ export function calculateMatch(
       synergies: [],
       riskWarnings: ['Match blocked due to fundamental incompatibilities in life goals.'],
       attachmentCombo,
-      categoryScores: { personality: 0, values: 0, emotionalIntelligence: 0, intellectualMatch: 0, copingCompatibility: 0 },
+      categoryScores: { personality: 0, emotionalIntelligence: 0, intellectualMatch: 0, copingCompatibility: 0, secureBonus: 0 },
     };
   }
 
   // ═══ PHASE 1: REWARD (Healthy Traits Only) ═══
   // Neuroticism, Dark Triad, and Avoidant Coping are EXCLUDED from reward.
-  // They can never ADD to compatibility — only the Audit Phase handles them.
+  // Values are handled entirely by the Lifestyle Engine — no double-counting.
   const healthyPersonalityKeys: (keyof TraitScores)[] = ['openness', 'conscientiousness', 'extraversion', 'agreeableness'];
   const eqKeys: (keyof TraitScores)[] = ['eq_wellbeing', 'eq_self_control', 'eq_emotionality', 'eq_sociability'];
   const healthyCopingKeys: (keyof TraitScores)[] = ['coping_active', 'coping_support'];
@@ -322,16 +333,24 @@ export function calculateMatch(
   const eqScore = euclideanProximity(traitsA, traitsB, eqKeys);
   const copingScore = euclideanProximity(traitsA, traitsB, healthyCopingKeys);
   const nfcScore = euclideanProximity(traitsA, traitsB, nfcKeys);
-  const valuesScore = Math.round((personalityScore * 0.4 + eqScore * 0.6));
 
-  // Weighted composite (Personality 25%, EQ 25%, Values 20%, NFC 15%, Coping 15%)
-  const rawScore = personalityScore * 0.25 + eqScore * 0.25 + valuesScore * 0.20 + nfcScore * 0.15 + copingScore * 0.15;
+  // Weighted composite — clean, no double-counting
+  // Personality: 35%, EQ: 35%, Coping: 15%, NFC: 5% (weakest marital predictor)
+  // Remaining 10% reserved as headroom for the Secure Attachment Bonus
+  const rawScore = personalityScore * 0.35 + eqScore * 0.35 + copingScore * 0.15 + nfcScore * 0.05;
 
   // ═══ PHASE 2: AUDIT (Negative Trait Checks) ═══
   const { penalty, warnings, autoFail } = computeRiskPenalty(traitsA, traitsB);
 
+  // Secure Attachment Bonus (+10%): Two securely attached people = strongest marital predictor
+  let secureBonus = 0;
+  if (traitsA.attachment_anxiety < 40 && traitsA.attachment_avoidance < 40 &&
+      traitsB.attachment_anxiety < 40 && traitsB.attachment_avoidance < 40) {
+    secureBonus = 10;
+  }
+
   // Auto-fail: Predator-Prey dynamic detected — score forced to 0
-  const overallScore = autoFail ? 0 : Math.max(0, Math.round(rawScore - penalty));
+  const overallScore = autoFail ? 0 : Math.max(0, Math.min(100, Math.round(rawScore + secureBonus - penalty)));
 
   // Step 4: Dimension-level analysis (for dashboard display)
   const frictionPoints: string[] = [];
@@ -379,10 +398,10 @@ export function calculateMatch(
     attachmentCombo,
     categoryScores: {
       personality: personalityScore,
-      values: valuesScore,
       emotionalIntelligence: eqScore,
       intellectualMatch: nfcScore,
       copingCompatibility: copingScore,
+      secureBonus,
     },
   };
 }
