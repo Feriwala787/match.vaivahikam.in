@@ -9,8 +9,8 @@ import type { TraitScores } from '@/lib/scoring';
 import Link from 'next/link';
 
 function getAttachmentStyle(anxiety: number, avoidance: number) {
-  const anxHigh = anxiety > 50;
-  const avHigh = avoidance > 50;
+  const anxHigh = anxiety > 65;
+  const avHigh = avoidance > 65;
   if (!anxHigh && !avHigh) return { style: 'Secure', color: 'bg-success/20 text-success', desc: 'Comfortable with intimacy and independence. Healthy baseline.' };
   if (anxHigh && !avHigh) return { style: 'Anxious-Preoccupied', color: 'bg-accent/20 text-accent', desc: 'Craves closeness, fears abandonment. May need extra reassurance.' };
   if (!anxHigh && avHigh) return { style: 'Dismissive-Avoidant', color: 'bg-accent/20 text-accent', desc: 'Values independence highly, may suppress emotional needs.' };
@@ -37,7 +37,7 @@ export default function Profile() {
       <Layout>
         <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
           <h1 className="text-3xl font-bold text-center">Your Psychological Profile</h1>
-          <p className="text-center text-text-muted text-sm">Based on 265 psychometric items across 7 validated instruments</p>
+          <p className="text-center text-text-muted text-sm">Based on 265 psychometric items across 6 validated instruments</p>
 
           {loading ? (
             <div className="text-center text-text-muted animate-pulse">Loading...</div>

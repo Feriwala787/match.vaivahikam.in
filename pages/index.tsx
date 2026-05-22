@@ -49,10 +49,10 @@ export default function Home() {
           <section className="w-full bg-surface border-y border-surface-light py-12">
             <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               {[
-                { value: '130+', label: 'Psychometric Items' },
-                { value: '5', label: 'Clinical Instruments' },
+                { value: '265', label: 'Psychometric Items' },
+                { value: '6', label: 'Clinical Instruments' },
                 { value: '18', label: 'Trait Dimensions' },
-                { value: '12', label: 'Dealbreaker Gates' },
+                { value: '20', label: 'Dealbreaker Gates' },
               ].map(stat => (
                 <div key={stat.label}>
                   <div className="text-3xl font-bold text-primary-light">{stat.value}</div>
@@ -107,10 +107,12 @@ export default function Home() {
             <h2 className="text-2xl font-bold mb-8 text-center">Clinical Instruments Used</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                { name: 'IPIP-NEO (Big Five)', desc: 'Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism — 50 items' },
+                { name: 'IPIP-NEO 120 (Big Five)', desc: 'Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism — 30 facets' },
                 { name: 'ECR-R (Attachment)', desc: 'Attachment Anxiety & Avoidance — 36 items' },
-                { name: 'Dark Core (D-Core)', desc: 'Machiavellianism, Narcissism, Psychopathy — 12 items' },
-                { name: 'World Values Survey', desc: 'EQ, Family Values, Gender Roles, Spirituality, Autonomy — 20 items' },
+                { name: 'Short Dark Triad (SD3)', desc: 'Machiavellianism, Narcissism, Psychopathy — 27 items' },
+                { name: 'TEIQue-SF (Emotional Intelligence)', desc: 'Well-being, Self-Control, Emotionality, Sociability — 30 items' },
+                { name: 'Brief COPE (Coping)', desc: 'Active, Avoidant, Support-Seeking coping — 14 items' },
+                { name: 'NFC-18 (Intellectual Match)', desc: 'Need for Cognition — 18 items' },
               ].map(inst => (
                 <div key={inst.name} className="bg-surface rounded-lg p-4 border border-surface-light">
                   <h4 className="font-semibold text-secondary">{inst.name}</h4>
