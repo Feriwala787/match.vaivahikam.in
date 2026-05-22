@@ -20,3 +20,15 @@ body {
   color: var(--color-text);
   font-family: 'Geist', system-ui, sans-serif;
 }
+
+
+@media print {
+  body { background: white !important; color: black !important; }
+  nav, footer, .print\\:hidden { display: none !important; }
+  .bg-surface, .bg-bg, .bg-surface-light { background: white !important; border-color: #ddd !important; }
+  .text-text-muted { color: #555 !important; }
+  .text-primary-light, .text-primary, .text-secondary { color: #333 !important; }
+  .text-success { color: #16a34a !important; }
+  .text-danger { color: #dc2626 !important; }
+  .text-accent { color: #d97706 !important; }
+}

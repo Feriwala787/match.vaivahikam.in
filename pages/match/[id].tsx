@@ -302,12 +302,18 @@ export default function MatchView() {
           )}
 
           {/* Disclaimer */}
-          <div className="bg-surface-light rounded-xl p-4 text-center">
+          <div className="bg-surface-light rounded-xl p-4 text-center space-y-3">
             <p className="text-text-muted text-xs">
               This report is generated from validated public-domain psychometric instruments.
               It is not a clinical diagnosis and should not replace professional premarital counseling.
               Use this as a starting point for deeper, honest conversation.
             </p>
+            <button
+              onClick={() => window.print()}
+              className="px-4 py-2 text-sm rounded-lg border border-surface-light text-text-muted hover:text-text hover:border-primary/50 transition print:hidden"
+            >
+              🖨️ Print / Save as PDF
+            </button>
           </div>
         </div>
       </Layout>

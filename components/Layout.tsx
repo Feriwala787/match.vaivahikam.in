@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { useLocale } from '@/lib/i18n';
 import { ReactNode } from 'react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, username, loading, signOut } = useAuth();
+  const { locale, setLocale } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -21,6 +23,9 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link href="/lifestyle" className="text-sm text-text-muted hover:text-text transition">Lifestyle</Link>
               <Link href="/settings" className="text-sm text-text-muted hover:text-text transition">Settings</Link>
               <span className="text-sm text-primary-light">@{username}</span>
+              <button onClick={() => setLocale(locale === 'en' ? 'hi' : 'en')} className="text-xs px-2 py-1 rounded border border-surface-light text-text-muted hover:text-text transition">
+                {locale === 'en' ? 'हिंदी' : 'EN'}
+              </button>
               <button onClick={signOut} className="text-sm text-text-muted hover:text-danger transition">Logout</button>
             </>
           ) : !loading ? (
