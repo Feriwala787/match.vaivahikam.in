@@ -8,16 +8,18 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 const ITEMS_PER_PAGE = 10;
 const STORAGE_KEY = 'rb_assessment_progress';
+const TIME_KEY = 'rb_assessment_start_time';
 
 export default function Assessment() {
   const { user } = useAuth();
   const router = useRouter();
+  const [agreed, setAgreed] = useState(false);
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Load saved progress from localStorage
+  // Load saved progress
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -25,11 +27,19 @@ export default function Assessment() {
         const parsed = JSON.parse(stored);
         setAnswers(parsed.answers || {});
         setPage(parsed.page || 0);
+        setAgreed(true); // If they have progress, they already agreed
       } catch {}
     }
   }, []);
 
-  // Auto-save to localStorage on every answer
+  // Track start time
+  useEffect(() => {
+    if (agreed && !localStorage.getItem(TIME_KEY)) {
+      localStorage.setItem(TIME_KEY, Date.now().toString());
+    }
+  }, [agreed]);
+
+  // Auto-save
   const autoSave = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, page }));
     setSaved(true);
@@ -40,7 +50,7 @@ export default function Assessment() {
     if (Object.keys(answers).length > 0) autoSave();
   }, [answers, autoSave]);
 
-  // Build ordered question list
+  // Build question list
   const allItems = [
     ...likertQuestions.map(q => ({ ...q, type: 'likert' as const })),
     ...dealbreakers.map(q => ({ ...q, type: 'dealbreaker' as const })),
@@ -51,7 +61,6 @@ export default function Assessment() {
   const answeredCount = Object.keys(answers).length;
   const progress = Math.round((answeredCount / TOTAL_QUESTIONS) * 100);
 
-  // Current section
   let runningCount = 0;
   let currentSection = sections[0];
   for (const s of sections) {
@@ -59,7 +68,6 @@ export default function Assessment() {
     runningCount += s.count;
   }
 
-  // Check if current page is fully answered
   const currentPageAnswered = currentItems.every(item => answers[item.id] !== undefined);
 
   function setAnswer(id: string, value: number | string) {
@@ -70,14 +78,20 @@ export default function Assessment() {
     if (answeredCount < TOTAL_QUESTIONS) return;
     setSubmitting(true);
 
+    // Calculate time spent
+    const startTime = parseInt(localStorage.getItem(TIME_KEY) || '0');
+    const minutesSpent = startTime ? Math.round((Date.now() - startTime) / 60000) : 0;
+    const rushed = minutesSpent < 15; // Less than 15 min for 265 items = suspicious
+
     const res = await authFetch('/api/assessment/submit', {
       method: 'POST',
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, minutesSpent, rushed }),
     });
 
     const data = await res.json();
     if (res.ok) {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TIME_KEY);
       router.push('/profile');
     } else {
       alert('Error saving: ' + (data.error || 'Unknown error'));
@@ -88,11 +102,106 @@ export default function Assessment() {
   function handleClearProgress() {
     if (confirm('Are you sure? This will erase all your answers.')) {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TIME_KEY);
       setAnswers({});
       setPage(0);
     }
   }
 
+  // ═══ INSTRUCTIONS SCREEN ═══
+  if (!agreed) {
+    return (
+      <ProtectedRoute>
+        <Layout>
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <div className="text-center mb-8">
+              <span className="text-5xl">🧬</span>
+              <h1 className="text-2xl font-bold mt-3">Psychological Assessment</h1>
+              <p className="text-text-muted text-sm mt-2">265 questions • ~60-90 minutes • Auto-saves your progress</p>
+            </div>
+
+            <div className="bg-surface rounded-2xl p-6 border border-surface-light space-y-6">
+              <div>
+                <h2 className="font-semibold mb-3">📋 How This Works</h2>
+                <p className="text-sm text-text-muted">You will see statements about yourself. For each one, choose how much you agree or disagree. There are no right or wrong answers — just be honest about who you actually are, not who you wish you were.</p>
+              </div>
+
+              <div>
+                <h2 className="font-semibold mb-3">🎯 What the Options Mean</h2>
+                <div className="space-y-3 text-sm">
+                  <div className="flex gap-3 items-start">
+                    <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold whitespace-nowrap">SD</span>
+                    <div>
+                      <span className="font-medium">Strongly Disagree</span>
+                      <p className="text-text-muted">This is completely NOT me. Example: If the statement is "I love parties" and you hate them → SD</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold whitespace-nowrap">D</span>
+                    <div>
+                      <span className="font-medium">Disagree</span>
+                      <p className="text-text-muted">Mostly not me, but not extreme. Example: "I love parties" → you don&apos;t enjoy them much → D</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold whitespace-nowrap">N</span>
+                    <div>
+                      <span className="font-medium">Neutral</span>
+                      <p className="text-text-muted">I&apos;m in the middle / it depends / I&apos;m not sure. Use sparingly — try to lean one way.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold whitespace-nowrap">A</span>
+                    <div>
+                      <span className="font-medium">Agree</span>
+                      <p className="text-text-muted">Mostly true for me. Example: "I love parties" → you generally enjoy them → A</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold whitespace-nowrap">SA</span>
+                    <div>
+                      <span className="font-medium">Strongly Agree</span>
+                      <p className="text-text-muted">This is 100% me. Example: "I love parties" and you&apos;re the life of every party → SA</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="font-semibold mb-3">⚠️ Important Guidelines</h2>
+                <ul className="text-sm text-text-muted space-y-2">
+                  <li>• <span className="text-text">Be honest, not aspirational.</span> Answer as you ARE, not as you want to be.</li>
+                  <li>• <span className="text-text">Don&apos;t overthink.</span> Your first instinct is usually the most accurate.</li>
+                  <li>• <span className="text-text">No one sees your raw answers.</span> Only computed scores are used for matching.</li>
+                  <li>• <span className="text-text">You can close and come back.</span> Progress auto-saves after every answer.</li>
+                  <li>• <span className="text-text">Take your time.</span> Rushing produces inaccurate results that hurt your matches.</li>
+                </ul>
+              </div>
+
+              <div className="bg-bg rounded-xl p-4 border border-surface-light">
+                <h2 className="font-semibold mb-2">🔒 Privacy Agreement</h2>
+                <ul className="text-xs text-text-muted space-y-1">
+                  <li>• Your raw answers are never shared with anyone — not even your match.</li>
+                  <li>• Only computed trait scores are compared, and only after mutual consent.</li>
+                  <li>• This is not a clinical diagnosis. Results are for compatibility purposes only.</li>
+                  <li>• You can delete all your data at any time from Settings.</li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => setAgreed(true)}
+                className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition text-lg"
+              >
+                I Understand — Begin Assessment
+              </button>
+            </div>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
+  // ═══ ASSESSMENT FORM ═══
   return (
     <ProtectedRoute>
       <Layout>

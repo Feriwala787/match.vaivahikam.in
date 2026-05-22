@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const user = await getUser(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized. Please log in again.' });
 
-  const { answers } = req.body;
+  const { answers, minutesSpent, rushed } = req.body;
   if (!answers || typeof answers !== 'object') return res.status(400).json({ error: 'Answers required' });
 
   const likertAnswers: Record<string, number> = {};
@@ -25,7 +25,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const traitScores = computeTraitScores(likertAnswers);
 
-  // Use authenticated client so RLS allows the write
   const supabase = getSupabaseWithAuth(req);
   const { error } = await supabase.from('psych_profiles').upsert({
     user_id: user.id,
@@ -33,6 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     trait_scores: traitScores,
     dealbreaker_answers: dealbreakAnswers,
     completed_at: new Date().toISOString(),
+    minutes_spent: minutesSpent || null,
+    rushed: rushed || false,
   }, { onConflict: 'user_id' });
 
   if (error) return res.status(500).json({ error: error.message });

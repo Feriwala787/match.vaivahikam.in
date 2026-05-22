@@ -70,6 +70,11 @@ export default function Layout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="text-center py-6 text-text-muted text-xs border-t border-surface-light">
+        <div className="flex justify-center gap-4 mb-2">
+          <a href="/science" className="hover:text-text transition">The Science</a>
+          <span>•</span>
+          <a href="/settings" className="hover:text-text transition">Settings</a>
+        </div>
         Built for human benefit, not profit. Open-source psychometrics.
       </footer>
     </div>
