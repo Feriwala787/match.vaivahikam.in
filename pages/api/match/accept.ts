@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseWithAuth, getUser } from '@/lib/supabase-server';
 import { calculateMatch } from '@/lib/scoring';
+import { computeLifestyleMatch } from '@/lib/lifestyle-scoring';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -34,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!senderUser || !receiverUser) return res.status(400).json({ error: 'Users not found.' });
 
   const [senderRes, receiverRes] = await Promise.all([
-    supabase.from('psych_profiles').select('trait_scores, dealbreaker_answers').eq('user_id', senderUser.id).single(),
-    supabase.from('psych_profiles').select('trait_scores, dealbreaker_answers').eq('user_id', receiverUser.id).single(),
+    supabase.from('psych_profiles').select('trait_scores, dealbreaker_answers, lifestyle_answers').eq('user_id', senderUser.id).single(),
+    supabase.from('psych_profiles').select('trait_scores, dealbreaker_answers, lifestyle_answers').eq('user_id', receiverUser.id).single(),
   ]);
 
   if (!senderRes.data || !receiverRes.data) {
@@ -50,10 +51,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     receiverRes.data.dealbreaker_answers || {}
   );
 
+  // Run lifestyle matching (separate score)
+  const lifestyleResult = (senderRes.data.lifestyle_answers && receiverRes.data.lifestyle_answers)
+    ? computeLifestyleMatch(senderRes.data.lifestyle_answers, receiverRes.data.lifestyle_answers)
+    : null;
+
+  const fullResult = { ...result, lifestyle: lifestyleResult };
+
   // Update request with result
   const { error } = await supabase
     .from('match_requests')
-    .update({ status: 'accepted', match_result: result })
+    .update({ status: 'accepted', match_result: fullResult })
     .eq('id', requestId);
 
   if (error) return res.status(500).json({ error: error.message });

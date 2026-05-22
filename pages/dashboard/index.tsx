@@ -18,6 +18,7 @@ interface MatchRequest {
 export default function Dashboard() {
   const { user, username } = useAuth();
   const [hasProfile, setHasProfile] = useState(false);
+  const [hasLifestyle, setHasLifestyle] = useState(false);
   const [incoming, setIncoming] = useState<MatchRequest[]>([]);
   const [outgoing, setOutgoing] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,11 +31,12 @@ export default function Dashboard() {
   async function loadData() {
     setLoading(true);
     const [profileRes, incRes, outRes] = await Promise.all([
-      supabase.from('psych_profiles').select('id').eq('user_id', user!.id).single(),
+      supabase.from('psych_profiles').select('id, lifestyle_answers').eq('user_id', user!.id).single(),
       supabase.from('match_requests').select('*').eq('receiver_username', username!).order('created_at', { ascending: false }),
       supabase.from('match_requests').select('*').eq('sender_username', username!).order('created_at', { ascending: false }),
     ]);
     setHasProfile(!!profileRes.data);
+    setHasLifestyle(!!profileRes.data?.lifestyle_answers && Object.keys(profileRes.data.lifestyle_answers).length > 0);
     setIncoming(incRes.data || []);
     setOutgoing(outRes.data || []);
     setLoading(false);
@@ -95,6 +97,27 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
+
+              {/* Lifestyle Assessment */}
+              {hasProfile && (
+                <div className="bg-surface rounded-xl p-6 border border-surface-light">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-semibold mb-1">🎨 Hobbies & Lifestyle</h2>
+                      {hasLifestyle ? (
+                        <p className="text-success text-sm">✓ Completed</p>
+                      ) : (
+                        <p className="text-text-muted text-sm">Optional — helps find shared interests & conversation starters</p>
+                      )}
+                    </div>
+                    <Link href="/assessment/lifestyle" className={`px-4 py-2 text-sm rounded-lg transition ${
+                      hasLifestyle ? 'border border-secondary text-secondary hover:bg-secondary/10' : 'bg-secondary text-white hover:opacity-90'
+                    }`}>
+                      {hasLifestyle ? 'Update' : 'Take Now'}
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Actions */}
               {hasProfile && (

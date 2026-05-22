@@ -7,9 +7,10 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import TraitRadar from '@/components/TraitRadar';
 import ScoreBar from '@/components/ScoreBar';
 import type { MatchResult } from '@/lib/scoring';
+import type { LifestyleResult } from '@/lib/lifestyle-scoring';
 
 interface MatchData {
-  match_result: MatchResult;
+  match_result: MatchResult & { lifestyle?: LifestyleResult | null };
   sender_username: string;
   receiver_username: string;
 }
@@ -195,6 +196,57 @@ export default function MatchView() {
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Lifestyle & Hobbies */}
+          {result.lifestyle && (
+            <div className="bg-surface rounded-2xl p-6 border border-secondary/20">
+              <h3 className="text-lg font-semibold mb-4">🎨 Lifestyle & Hobbies Match — <span className="text-secondary">{result.lifestyle.overallScore}%</span></h3>
+
+              {Object.entries(result.lifestyle.categoryScores).length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                  {Object.entries(result.lifestyle.categoryScores).map(([cat, score]) => (
+                    <div key={cat} className="text-center p-2 rounded-lg bg-bg border border-surface-light">
+                      <div className={`text-lg font-bold ${score >= 70 ? 'text-success' : score >= 40 ? 'text-accent' : 'text-text-muted'}`}>{score}%</div>
+                      <div className="text-xs text-text-muted">{cat}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {result.lifestyle.sharedInterests.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-success mb-2">✓ Shared Interests</h4>
+                  <ul className="space-y-1">
+                    {result.lifestyle.sharedInterests.slice(0, 6).map((s, i) => (
+                      <li key={i} className="text-xs text-text-muted">• {s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.lifestyle.conversationHooks.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-secondary mb-2">💬 Conversation Starters</h4>
+                  <ul className="space-y-1">
+                    {result.lifestyle.conversationHooks.map((h, i) => (
+                      <li key={i} className="text-xs text-text-muted">• {h}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.lifestyle.differences.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-accent mb-2">⚡ Different Vibes</h4>
+                  <ul className="space-y-1">
+                    {result.lifestyle.differences.slice(0, 4).map((d, i) => (
+                      <li key={i} className="text-xs text-text-muted">• {d}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
