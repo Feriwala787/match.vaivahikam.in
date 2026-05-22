@@ -110,11 +110,18 @@ export default function Dashboard() {
                         <p className="text-text-muted text-sm">Optional — helps find shared interests & conversation starters</p>
                       )}
                     </div>
-                    <Link href="/assessment/lifestyle" className={`px-4 py-2 text-sm rounded-lg transition ${
-                      hasLifestyle ? 'border border-secondary text-secondary hover:bg-secondary/10' : 'bg-secondary text-white hover:opacity-90'
-                    }`}>
-                      {hasLifestyle ? 'Update' : 'Take Now'}
-                    </Link>
+                    <div className="flex gap-2">
+                      {hasLifestyle && (
+                        <Link href="/lifestyle" className="px-4 py-2 text-sm rounded-lg border border-secondary text-secondary hover:bg-secondary/10 transition">
+                          View Profile
+                        </Link>
+                      )}
+                      <Link href="/assessment/lifestyle" className={`px-4 py-2 text-sm rounded-lg transition ${
+                        hasLifestyle ? 'border border-surface-light text-text-muted hover:text-text' : 'bg-secondary text-white hover:opacity-90'
+                      }`}>
+                        {hasLifestyle ? 'Update' : 'Take Now'}
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}

@@ -18,6 +18,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <>
               <Link href="/dashboard" className="text-sm text-text-muted hover:text-text transition">Dashboard</Link>
               <Link href="/profile" className="text-sm text-text-muted hover:text-text transition">Profile</Link>
+              <Link href="/lifestyle" className="text-sm text-text-muted hover:text-text transition">Lifestyle</Link>
               <Link href="/settings" className="text-sm text-text-muted hover:text-text transition">Settings</Link>
               <span className="text-sm text-primary-light">@{username}</span>
               <button onClick={signOut} className="text-sm text-text-muted hover:text-danger transition">Logout</button>
@@ -51,6 +52,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="text-sm text-primary-light font-medium">@{username}</span>
                 <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="text-sm text-text-muted hover:text-text">Dashboard</Link>
                 <Link href="/profile" onClick={() => setMenuOpen(false)} className="text-sm text-text-muted hover:text-text">Profile</Link>
+                <Link href="/lifestyle" onClick={() => setMenuOpen(false)} className="text-sm text-text-muted hover:text-text">Lifestyle</Link>
                 <Link href="/assessment" onClick={() => setMenuOpen(false)} className="text-sm text-text-muted hover:text-text">Assessment</Link>
                 <Link href="/settings" onClick={() => setMenuOpen(false)} className="text-sm text-text-muted hover:text-text">Settings</Link>
                 <button onClick={() => { signOut(); setMenuOpen(false); }} className="text-sm text-danger text-left">Logout</button>
