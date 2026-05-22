@@ -31,7 +31,7 @@ export default function Dashboard() {
   async function loadData() {
     setLoading(true);
     const [profileRes, incRes, outRes] = await Promise.all([
-      supabase.from('psych_profiles').select('id, lifestyle_answers').eq('user_id', user!.id).single(),
+      supabase.from('psych_profiles').select('id, lifestyle_answers').eq('user_id', user!.id).maybeSingle(),
       supabase.from('match_requests').select('*').eq('receiver_username', username!).order('created_at', { ascending: false }),
       supabase.from('match_requests').select('*').eq('sender_username', username!).order('created_at', { ascending: false }),
     ]);

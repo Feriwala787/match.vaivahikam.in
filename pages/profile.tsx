@@ -27,7 +27,7 @@ export default function Profile() {
   }, [user]);
 
   async function loadProfile() {
-    const { data } = await supabase.from('psych_profiles').select('trait_scores').eq('user_id', user!.id).single();
+    const { data } = await supabase.from('psych_profiles').select('trait_scores').eq('user_id', user!.id).maybeSingle();
     setTraits(data?.trait_scores || null);
     setLoading(false);
   }

@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!username || typeof username !== 'string') return res.status(400).json({ error: 'Username required' });
 
   const supabase = getSupabaseServer();
-  const { data } = await supabase.from('users').select('username').eq('username', username.toLowerCase()).single();
+  const { data } = await supabase.from('users').select('username').eq('username', username.toLowerCase()).maybeSingle();
 
   return res.status(200).json({ exists: !!data });
 }

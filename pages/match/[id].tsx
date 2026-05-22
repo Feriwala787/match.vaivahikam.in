@@ -31,7 +31,7 @@ export default function MatchView() {
       .from('match_requests')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (!match || (match.sender_username !== username && match.receiver_username !== username)) {
       router.push('/dashboard');
