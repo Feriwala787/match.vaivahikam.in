@@ -32,6 +32,13 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   { id: 'weekend_vibe', text: 'If you have a completely free weekend, what is your ideal vibe?', category: 'Leisure & Entertainment', type: 'single', options: ['Relaxing at home and recharging', 'Exploring the city or trying new activities', 'Socializing and meeting friends/family', 'Catching up on chores and errands'] },
   { id: 'perfect_sunday', text: 'Describe your perfect Sunday in one sentence.', category: 'Leisure & Entertainment', type: 'text', optional: true },
 
+  // Social Life & Friendships
+  { id: 'social_frequency', text: 'How often do you like to socialize with friends?', category: 'Leisure & Entertainment', type: 'single', options: ['Multiple times a week', 'Once a week', 'A few times a month', 'Rarely'] },
+  { id: 'opposite_gender_friends', text: 'How do you feel about your partner having close friends of the opposite gender?', category: 'Leisure & Entertainment', type: 'single', options: ['Completely fine', 'Fine with boundaries', 'Uncomfortable', 'Not acceptable'] },
+
+  // Alone Time
+  { id: 'alone_time', text: 'How many hours of completely alone time (no partner, no family) do you need per day to feel recharged?', category: 'Leisure & Entertainment', type: 'single', options: ['0 — I love constant company', '1-2 hours', '3+ hours', 'I need significant solitude'] },
+
   // ═══════════════════════════════════════════
   // STEP 2: ACTIVITY & TRAVEL
   // ═══════════════════════════════════════════
@@ -50,6 +57,14 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   { id: 'travel_style', text: 'What is your preferred travel style?', category: 'Activity & Travel', type: 'single', options: ['Luxury resorts & relaxing', 'Backpacking & adventure', 'Cultural & historical sites', 'Nature & wildlife'], parentId: 'travel_frequency', showWhen: ['I love it and travel frequently', 'I enjoy it occasionally (1-2 times a year)'] },
   { id: 'travel_dream', text: 'What is the number one dream destination on your bucket list?', category: 'Activity & Travel', type: 'text', parentId: 'travel_frequency', showWhen: ['I love it and travel frequently', 'I enjoy it occasionally (1-2 times a year)'], optional: true },
 
+  // Daily Rhythm
+  { id: 'chronotype', text: 'Are you a morning person or a night owl?', category: 'Activity & Travel', type: 'single', options: ['Early bird — up by 6am', 'Night owl — peak energy after 10pm', 'Flexible — depends on the day'] },
+  { id: 'bedtime', text: 'What time do you typically go to bed?', category: 'Activity & Travel', type: 'single', options: ['Before 10pm', '10pm - 12am', 'After midnight'] },
+
+  // Health & Wellness
+  { id: 'healthcare_approach', text: 'What is your approach to healthcare?', category: 'Activity & Travel', type: 'single', options: ['Modern medicine only', 'Open to both alternative and modern', 'Primarily alternative/traditional (Ayurveda, homeopathy)'] },
+  { id: 'therapy_belief', text: 'How do you feel about mental health therapy/counseling?', category: 'Activity & Travel', type: 'single', options: ['Strongly believe in it', 'Open to it if needed', 'Don\'t believe in it'] },
+
   // ═══════════════════════════════════════════
   // STEP 3: DAILY CONSUMPTION & PETS
   // ═══════════════════════════════════════════
@@ -66,7 +81,11 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   { id: 'pets_preference', text: 'Do you want pets at home?', category: 'Consumption & Daily Life', type: 'single', options: ['Yes, absolutely', 'No, I prefer a pet-free home', 'I am neutral / okay either way'] },
   { id: 'pets_type', text: 'Are you a dog person, a cat person, or both?', category: 'Consumption & Daily Life', type: 'single', options: ['Dogs', 'Cats', 'Both', 'Other'], parentId: 'pets_preference', showWhen: ['Yes, absolutely'] },
 
-  // Love Languages (placed with daily habits — how you show love daily)
+  // Digital Habits & Social Media
+  { id: 'social_media_time', text: 'How much time do you spend on social media daily?', category: 'Consumption & Daily Life', type: 'single', options: ['Less than 30 minutes', '1-2 hours', '3+ hours'] },
+  { id: 'social_media_posting', text: 'How do you feel about posting relationship/family content publicly?', category: 'Consumption & Daily Life', type: 'single', options: ['Love sharing everything', 'Occasional posts are fine', 'Strictly private — no posts'] },
+
+  // Love Languages
   { id: 'love_language_rank', text: 'Rank these in order of what makes you feel MOST loved and appreciated (tap to rank, 1 = most important):', category: 'Consumption & Daily Life', type: 'rank', options: ['Hearing "I love you" or receiving compliments (Words)', 'My partner helping me with a heavy workload (Acts of Service)', 'Receiving thoughtful gifts (Gifts)', 'Undivided, screen-free attention (Quality Time)', 'Holding hands or physical affection (Touch)'] },
 
   // ═══════════════════════════════════════════
@@ -84,6 +103,13 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   { id: 'chore_mental_load', text: "Who should manage the 'Mental Load' (remembering grocery lists, paying bills, scheduling appointments)?", category: 'Career & Finances', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'Whoever is free'] },
   { id: 'chore_cleaning', text: 'Who handles cleaning and household maintenance?', category: 'Career & Finances', type: 'single', options: ['I will', 'My partner will', 'We split it 50-50', 'We will hire help'] },
 
+  // Spending Tier & Lifestyle Level
+  { id: 'spending_tier', text: 'What is your monthly personal spending budget (excluding rent/EMIs)?', category: 'Career & Finances', type: 'single', options: ['Under ₹10K', '₹10K - ₹30K', '₹30K - ₹75K', '₹75K+'] },
+  { id: 'luxury_attitude', text: 'How do you feel about luxury purchases (designer items, premium gadgets)?', category: 'Career & Finances', type: 'single', options: ['Regular part of life', 'Occasional treat', 'Unnecessary waste'] },
+
+  // Cleanliness Standards
+  { id: 'cleanliness', text: 'How would you describe your personal cleanliness standards at home?', category: 'Career & Finances', type: 'single', options: ['Everything must be spotless', 'Reasonably tidy', 'Organized chaos', 'I\'m messy and okay with it'] },
+
   // ═══════════════════════════════════════════
   // STEP 5: GEOGRAPHY & FAMILY OBLIGATIONS
   // ═══════════════════════════════════════════
@@ -95,6 +121,10 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   // Extended Family (belongs with geography — where you live depends on parents)
   { id: 'aging_parents', text: 'What are your expectations for supporting aging parents in the future?', category: 'Geography & Family', type: 'single', options: ['They will eventually live with us, and we will physically care for them', 'We will support them financially, but live separately', 'They will remain completely independent'] },
   { id: 'family_influence', text: 'How much influence should your parents have over your major life decisions (buying a house, raising kids)?', category: 'Geography & Family', type: 'single', options: ['Heavy influence — they know best', 'A guiding voice — we listen but decide', 'Zero influence — we decide alone'] },
+
+  // Religious Practice Depth
+  { id: 'religious_practice', text: 'How often do you actively practice your faith (prayer, temple, fasting, etc.)?', category: 'Geography & Family', type: 'single', options: ['Daily practice', 'Weekly', 'Festivals only', 'Not practicing'] },
+  { id: 'religious_expectation', text: 'Do you expect your partner to match your level of religious practice?', category: 'Geography & Family', type: 'single', options: ['Yes, must match', 'Prefer similar but flexible', 'Doesn\'t matter'] },
 
   // ═══════════════════════════════════════════
   // STEP 6: FUTURE TRAJECTORY & PARENTING

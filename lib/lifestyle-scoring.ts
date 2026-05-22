@@ -65,6 +65,17 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
     hardGateFlags.push('Family Authority Clash: One wants heavy parental influence over decisions while the other wants complete autonomy.');
   }
 
+  // Religious practice hard gate
+  const relPracticeA = val(answersA, 'religious_practice');
+  const relPracticeB = val(answersB, 'religious_practice');
+  const relExpectA = val(answersA, 'religious_expectation');
+  const relExpectB = val(answersB, 'religious_expectation');
+  if (relExpectA === 'Yes, must match' && relPracticeA && relPracticeB && relPracticeA !== relPracticeB) {
+    hardGateFlags.push('Religious Practice Mismatch: One partner requires matching religious practice level but the other practices at a different intensity.');
+  } else if (relExpectB === 'Yes, must match' && relPracticeA && relPracticeB && relPracticeA !== relPracticeB) {
+    hardGateFlags.push('Religious Practice Mismatch: One partner requires matching religious practice level but the other practices at a different intensity.');
+  }
+
   // If hard gates triggered, score = 0
   if (hardGateFlags.length > 0) {
     return { overallScore: 0, hardGateFlags, frictionPenalties, sharedVibeTags: [], icebreakerTable: [], conversationHooks: [], loveLanguages: null };
@@ -79,6 +90,69 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
       (petsB === 'Yes, absolutely' && petsA === 'No, I prefer a pet-free home')) {
     score -= 15;
     frictionPenalties.push('Pets: One strongly wants pets while the other wants a pet-free home.');
+  }
+
+  // Social media privacy clash
+  const postA = val(answersA, 'social_media_posting');
+  const postB = val(answersB, 'social_media_posting');
+  if ((postA === 'Love sharing everything' && postB === 'Strictly private \u2014 no posts') ||
+      (postB === 'Love sharing everything' && postA === 'Strictly private \u2014 no posts')) {
+    score -= 10;
+    frictionPenalties.push('Social Media Privacy: One wants to share everything publicly while the other is strictly private. Daily tension guaranteed.');
+  }
+
+  // Alone time mismatch
+  const aloneA = val(answersA, 'alone_time');
+  const aloneB = val(answersB, 'alone_time');
+  if ((aloneA === '0 \u2014 I love constant company' && aloneB === 'I need significant solitude') ||
+      (aloneB === '0 \u2014 I love constant company' && aloneA === 'I need significant solitude')) {
+    score -= 10;
+    frictionPenalties.push('Alone Time: One craves constant togetherness while the other needs significant solitude. This creates feelings of rejection or suffocation.');
+  }
+
+  // Chronotype mismatch
+  const chronoA = val(answersA, 'chronotype');
+  const chronoB = val(answersB, 'chronotype');
+  if ((chronoA === 'Early bird \u2014 up by 6am' && chronoB === 'Night owl \u2014 peak energy after 10pm') ||
+      (chronoB === 'Early bird \u2014 up by 6am' && chronoA === 'Night owl \u2014 peak energy after 10pm')) {
+    score -= 5;
+    frictionPenalties.push('Daily Rhythm: Early bird vs. night owl \u2014 you\'ll rarely share peak energy hours together.');
+  }
+
+  // Therapy belief mismatch
+  const therapyA = val(answersA, 'therapy_belief');
+  const therapyB = val(answersB, 'therapy_belief');
+  if ((therapyA === 'Strongly believe in it' && therapyB === 'Don\'t believe in it') ||
+      (therapyB === 'Strongly believe in it' && therapyA === 'Don\'t believe in it')) {
+    score -= 10;
+    frictionPenalties.push('Mental Health: One strongly believes in therapy while the other rejects it. When the marriage hits rough patches, you won\'t agree on how to get help.');
+  }
+
+  // Cleanliness mismatch (2+ gap)
+  const cleanOpts = ['Everything must be spotless', 'Reasonably tidy', 'Organized chaos', 'I\'m messy and okay with it'];
+  const cleanIdxA = cleanOpts.indexOf(val(answersA, 'cleanliness'));
+  const cleanIdxB = cleanOpts.indexOf(val(answersB, 'cleanliness'));
+  if (cleanIdxA >= 0 && cleanIdxB >= 0 && Math.abs(cleanIdxA - cleanIdxB) >= 2) {
+    score -= 10;
+    frictionPenalties.push('Cleanliness Standards: Significant gap in tidiness expectations \u2014 one of the most cited daily irritants in marriages.');
+  }
+
+  // Spending tier mismatch (2+ gap)
+  const spendOpts = ['Under \u20b910K', '\u20b910K - \u20b930K', '\u20b930K - \u20b975K', '\u20b975K+'];
+  const spendIdxA = spendOpts.indexOf(val(answersA, 'spending_tier'));
+  const spendIdxB = spendOpts.indexOf(val(answersB, 'spending_tier'));
+  if (spendIdxA >= 0 && spendIdxB >= 0 && Math.abs(spendIdxA - spendIdxB) >= 2) {
+    score -= 10;
+    frictionPenalties.push('Spending Level: Very different monthly spending habits \u2014 what feels normal to one will feel extravagant or stingy to the other.');
+  }
+
+  // Opposite-gender friends friction
+  const friendA = val(answersA, 'opposite_gender_friends');
+  const friendB = val(answersB, 'opposite_gender_friends');
+  if ((friendA === 'Completely fine' && friendB === 'Not acceptable') ||
+      (friendB === 'Completely fine' && friendA === 'Not acceptable')) {
+    score -= 10;
+    frictionPenalties.push('Opposite-Gender Friendships: Fundamentally different boundaries \u2014 one sees it as normal, the other as unacceptable. Major trust friction.');
   }
 
   // Finance clash
@@ -205,6 +279,38 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
   if (sportsOverlap.length > 0) {
     score += 5;
     sharedVibeTags.push(`🏆 ${sportsOverlap.join(', ')}`);
+  }
+
+  // Chronotype match bonus
+  if (chronoA && chronoB && chronoA === chronoB && chronoA !== 'Flexible \u2014 depends on the day') {
+    score += 3;
+    sharedVibeTags.push('\u23f0 Same Daily Rhythm');
+  }
+
+  // Alone time match
+  if (aloneA && aloneB && aloneA === aloneB) {
+    score += 3;
+    sharedVibeTags.push('\ud83e\uddd8 Same Space Needs');
+  }
+
+  // Social frequency match
+  const socialA = val(answersA, 'social_frequency');
+  const socialB = val(answersB, 'social_frequency');
+  if (socialA && socialB && socialA === socialB) {
+    score += 3;
+    sharedVibeTags.push('\ud83c\udf89 Same Social Energy');
+  }
+
+  // Therapy alignment
+  if (therapyA && therapyB && therapyA === therapyB && therapyA === 'Strongly believe in it') {
+    score += 3;
+    sharedVibeTags.push('\ud83e\ude7a Pro-Therapy');
+  }
+
+  // Cleanliness match
+  if (cleanIdxA >= 0 && cleanIdxB >= 0 && cleanIdxA === cleanIdxB) {
+    score += 3;
+    sharedVibeTags.push('\u2728 Same Tidiness Level');
   }
 
   // Fashion match
