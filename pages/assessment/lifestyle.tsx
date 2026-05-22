@@ -7,7 +7,7 @@ import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const STORAGE_KEY = 'rb_lifestyle_progress';
-const STEPS = ['Leisure & Entertainment', 'Activity & Travel', 'Consumption & Daily Life', 'Career & Finances', 'Geography & Family', 'Future & Parenting'];
+const STEPS = ['Leisure & Entertainment', 'Activity & Travel', 'Consumption & Daily Life', 'Career & Finances', 'Geography & Family', 'Future & Parenting', 'Scenarios & Communication'];
 
 export default function LifestyleAssessment() {
   const { user } = useAuth();

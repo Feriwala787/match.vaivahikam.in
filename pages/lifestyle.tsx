@@ -15,6 +15,7 @@ const STEP_ICONS: Record<string, string> = {
   'Career & Finances': '💼',
   'Geography & Family': '🌍',
   'Future & Parenting': '🚀',
+  'Scenarios & Communication': '💡',
 };
 
 export default function LifestyleProfile() {

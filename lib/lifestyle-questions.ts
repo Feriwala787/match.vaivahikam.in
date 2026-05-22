@@ -107,6 +107,23 @@ export const lifestyleQuestions: LifestyleQuestion[] = [
   { id: 'parenting_education', text: "What is your view on a child's academic success?", category: 'Future & Parenting', type: 'single', options: ['They must be pushed to be at the top of their class', 'They should pursue what makes them happy, even if it\'s not traditional', 'Balance — academics matter but so does their mental health'] },
   { id: 'parenting_religion', text: 'How important is it that your children strictly follow your religious or cultural traditions?', category: 'Future & Parenting', type: 'single', options: ['Non-negotiable — they must follow our traditions', 'Somewhat important — expose them but don\'t force', 'Let them choose when they are older'] },
   { id: 'parenting_screen', text: 'What is your stance on screen time for children?', category: 'Future & Parenting', type: 'single', options: ['Strictly limited — minimal screens', 'Moderate — supervised and educational', 'Relaxed — they\'ll figure it out'] },
+
+  // ═══════════════════════════════════════════
+  // STEP 7: REAL-LIFE SCENARIOS & COMMUNICATION
+  // ═══════════════════════════════════════════
+
+  // Situational Judgment (practical scenarios)
+  { id: 'sjt_inlaw', text: 'You and your spouse agree on a specific way to manage your finances. Your parents strongly disagree and tell you to do it their way. What do you actually do?', category: 'Scenarios & Communication', type: 'single', options: ['Follow my parents\' advice out of respect', 'Follow my spouse\'s plan but tell my parents we are doing it their way', 'Kindly but firmly tell my parents that my spouse and I have made our decision', 'Argue with my parents until they agree with me'] },
+  { id: 'sjt_social_battery', text: 'Your spouse has had a terrible, exhausting day at work. You have a family dinner planned at your parents\' house that evening. What happens?', category: 'Scenarios & Communication', type: 'single', options: ['We both go; family obligations are non-negotiable', 'I go alone and make an excuse for them so they can rest', 'We cancel entirely and stay home together'] },
+  { id: 'sjt_spending', text: 'Your partner makes a large purchase (₹50,000+) without consulting you first. How do you react?', category: 'Scenarios & Communication', type: 'single', options: ['I would be very upset — all big purchases must be discussed', 'I\'d be slightly annoyed but let it go', 'It\'s their money, they can spend it however they want'] },
+  { id: 'sjt_career_move', text: 'Your partner gets a dream job offer in another city. It would mean uprooting your life. What do you do?', category: 'Scenarios & Communication', type: 'single', options: ['Support them fully and move without hesitation', 'Discuss it seriously — I\'d move only if conditions are right', 'I would not move; they should find something local'] },
+
+  // Repair Language (how you fix fights)
+  { id: 'repair_language', text: 'After a heated argument, what is the best way for your partner to make things right with you?', category: 'Scenarios & Communication', type: 'single', options: ['Giving me space for a few hours, then acting normal', 'Offering a direct verbal "I am sorry" and admitting they were wrong', 'Explaining why they acted that way so I can understand their logic', 'Making a physical gesture (a hug, making me tea)'] },
+
+  // Engagement Pacing
+  { id: 'pacing_communication', text: 'Once an engagement is finalized, how often do you expect to communicate before the wedding?', category: 'Scenarios & Communication', type: 'single', options: ['Texting/calling constantly throughout the day', 'A quick check-in once a day', 'A few times a week is enough'] },
+  { id: 'pacing_vulnerability', text: 'How long does it usually take for you to open up about your deep insecurities?', category: 'Scenarios & Communication', type: 'single', options: ['I am an open book immediately', 'It takes me a few months of trust-building', 'It takes me years to fully trust someone'] },
 ];
 
 // Get visible questions based on current answers (conditional branching)
