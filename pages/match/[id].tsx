@@ -298,6 +298,35 @@ export default function MatchView() {
                   )}
                 </div>
               )}
+
+              {/* Full Detailed Comparison */}
+              {result.lifestyle.detailedComparison && result.lifestyle.detailedComparison.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">📊 Full Lifestyle Comparison</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-surface-light">
+                          <th className="text-left py-2 text-text-muted font-normal">Topic</th>
+                          <th className="text-left py-2 text-text-muted font-normal">@{data.sender_username}</th>
+                          <th className="text-left py-2 text-text-muted font-normal">@{data.receiver_username}</th>
+                          <th className="text-center py-2 text-text-muted font-normal w-8"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {result.lifestyle.detailedComparison.map((row, i) => (
+                          <tr key={i} className="border-b border-surface-light/50">
+                            <td className="py-2 font-medium">{row.icon} {row.label}</td>
+                            <td className="py-2 text-text-muted max-w-[150px] truncate">{row.userA}</td>
+                            <td className="py-2 text-text-muted max-w-[150px] truncate">{row.userB}</td>
+                            <td className="py-2 text-center">{row.match ? '✅' : row.userA !== '—' && row.userB !== '—' ? '⚠️' : ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -6,6 +6,7 @@ export interface LifestyleResult {
   icebreakerTable: Array<{ category: string; icon: string; userA: string; userB: string }>;
   conversationHooks: string[];
   loveLanguages: { userA: string[]; userB: string[]; match: boolean; tip: string } | null;
+  detailedComparison: Array<{ label: string; icon: string; userA: string; userB: string; match: boolean }>;
 }
 
 type Answers = Record<string, string | string[]>;
@@ -78,7 +79,7 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
 
   // If hard gates triggered, score = 0
   if (hardGateFlags.length > 0) {
-    return { overallScore: 0, hardGateFlags, frictionPenalties, sharedVibeTags: [], icebreakerTable: [], conversationHooks: [], loveLanguages: null };
+    return { overallScore: 0, hardGateFlags, frictionPenalties, sharedVibeTags: [], icebreakerTable: [], conversationHooks: [], loveLanguages: null, detailedComparison: [] };
   }
 
   // ═══ TIER 2: CORE FRICTION PENALTIES ═══
@@ -390,5 +391,65 @@ export function computeLifestyleMatch(answersA: Answers, answersB: Answers): Lif
     }
   }
 
-  return { overallScore: score, hardGateFlags, frictionPenalties, sharedVibeTags, icebreakerTable, conversationHooks, loveLanguages };
+  // ═══ DETAILED SIDE-BY-SIDE COMPARISON (All lifestyle answers) ═══
+  const detailedComparison: Array<{ label: string; icon: string; userA: string; userB: string; match: boolean }> = [];
+
+  const comparisonFields = [
+    { key: 'weekend_vibe', label: 'Ideal Weekend', icon: '🛋️' },
+    { key: 'chronotype', label: 'Daily Rhythm', icon: '⏰' },
+    { key: 'alone_time', label: 'Alone Time Needed', icon: '🧘' },
+    { key: 'social_frequency', label: 'Social Frequency', icon: '🎉' },
+    { key: 'opposite_gender_friends', label: 'Opposite-Gender Friends', icon: '🤝' },
+    { key: 'fitness_importance', label: 'Fitness Priority', icon: '💪' },
+    { key: 'travel_frequency', label: 'Travel Frequency', icon: '✈️' },
+    { key: 'travel_style', label: 'Travel Style', icon: '🌍' },
+    { key: 'healthcare_approach', label: 'Healthcare Approach', icon: '🏥' },
+    { key: 'therapy_belief', label: 'Therapy/Counseling', icon: '🩺' },
+    { key: 'social_media_time', label: 'Social Media Usage', icon: '📱' },
+    { key: 'social_media_posting', label: 'Posting Privacy', icon: '🔒' },
+    { key: 'fashion_style', label: 'Fashion Style', icon: '👔' },
+    { key: 'dining_frequency', label: 'Eating Out', icon: '🍽️' },
+    { key: 'dining_vibe', label: 'Dining Vibe', icon: '🍾' },
+    { key: 'pets_preference', label: 'Pets', icon: '🐾' },
+    { key: 'work_philosophy', label: 'Work Philosophy', icon: '💼' },
+    { key: 'partner_career', label: 'Partner Career Expectation', icon: '👥' },
+    { key: 'spending_habits', label: 'Saving Habits', icon: '💰' },
+    { key: 'spending_tier', label: 'Monthly Spending', icon: '💳' },
+    { key: 'finances_merged', label: 'Money Management', icon: '🏦' },
+    { key: 'cleanliness', label: 'Cleanliness Standards', icon: '✨' },
+    { key: 'chore_cooking', label: 'Who Cooks?', icon: '🍳' },
+    { key: 'chore_mental_load', label: 'Who Manages Mental Load?', icon: '🧠' },
+    { key: 'chore_cleaning', label: 'Who Cleans?', icon: '🧹' },
+    { key: 'geography_settle', label: 'Where to Settle', icon: '🏠' },
+    { key: 'relocation_willingness', label: 'Relocation Willingness', icon: '🚚' },
+    { key: 'aging_parents', label: 'Aging Parents Plan', icon: '👴' },
+    { key: 'family_influence', label: 'Family Influence', icon: '👨\u200d👩\u200d👧' },
+    { key: 'religious_practice', label: 'Religious Practice', icon: '🙏' },
+    { key: 'ultimate_dream', label: '20-Year Dream', icon: '🌟' },
+    { key: 'parenting_discipline', label: 'Parenting Style', icon: '👶' },
+    { key: 'parenting_education', label: 'Academic Expectations', icon: '🎓' },
+    { key: 'sjt_inlaw', label: 'In-Law Boundary (Scenario)', icon: '🎭' },
+    { key: 'sjt_social_battery', label: 'Social Battery (Scenario)', icon: '🔋' },
+    { key: 'sjt_spending', label: 'Spending Conflict (Scenario)', icon: '💸' },
+    { key: 'sjt_career_move', label: 'Career Move (Scenario)', icon: '🚀' },
+    { key: 'repair_language', label: 'How to Repair After Fight', icon: '🩹' },
+    { key: 'pacing_communication', label: 'Communication Frequency', icon: '📞' },
+    { key: 'pacing_vulnerability', label: 'Vulnerability Timeline', icon: '🔓' },
+  ];
+
+  for (const field of comparisonFields) {
+    const a = val(answersA, field.key);
+    const b = val(answersB, field.key);
+    if (a || b) {
+      detailedComparison.push({
+        label: field.label,
+        icon: field.icon,
+        userA: a || '—',
+        userB: b || '—',
+        match: a === b && a !== '',
+      });
+    }
+  }
+
+  return { overallScore: score, hardGateFlags, frictionPenalties, sharedVibeTags, icebreakerTable, conversationHooks, loveLanguages, detailedComparison };
 }
