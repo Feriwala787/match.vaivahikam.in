@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSupabaseServer, getSupabaseWithAuth, getUser } from '@/lib/supabase-server';
+import { getSupabaseWithAuth, getUser } from '@/lib/supabase-server';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -8,22 +8,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!user) return res.status(401).json({ error: 'Unauthorized. Please log in again.' });
 
   const supabase = getSupabaseWithAuth(req);
-  const supabaseAdmin = getSupabaseServer(); // For cross-user reads
   const { targetUsername } = req.body;
   if (!targetUsername) return res.status(400).json({ error: 'Target username required.' });
 
   // Get sender username
-  const { data: sender } = await supabase.from('users').select('username').eq('id', user.id).single();
+  const { data: sender } = await supabase.from('users').select('username').eq('id', user.id).maybeSingle();
   if (!sender) return res.status(400).json({ error: 'Complete your profile first.' });
 
   if (sender.username === targetUsername) return res.status(400).json({ error: "You can't send a request to yourself." });
 
   // Verify target exists
-  const { data: target } = await supabaseAdmin.from('users').select('id, username').eq('username', targetUsername).maybeSingle();
+  const { data: target } = await supabase.from('users').select('id, username').eq('username', targetUsername).maybeSingle();
   if (!target) return res.status(404).json({ error: `User @${targetUsername} not found.` });
 
-  // Verify both have completed assessment (use admin client to check target)
-  const { data: targetProfile } = await supabaseAdmin.from('psych_profiles').select('id').eq('user_id', target.id).maybeSingle();
+  // Verify both have completed assessment
+  const { data: targetProfile } = await supabase.from('psych_profiles').select('id').eq('user_id', target.id).maybeSingle();
   if (!targetProfile) return res.status(400).json({ error: `@${targetUsername} has not completed their assessment yet.` });
 
   const { data: senderProfile } = await supabase.from('psych_profiles').select('id').eq('user_id', user.id).maybeSingle();
